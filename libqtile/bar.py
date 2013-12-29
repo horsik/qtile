@@ -36,56 +36,70 @@ class Gap(command.CommandObject):
         reason for configuring a gap is to make space for a third-party bar or
         other static window.
     """
-    def __init__(self, size):
-        """
-            size: The width of the gap.
-        """
-        self.size = size
+    def __init__(self, **config):
+        self.size = config.get("width") or config.get("height")
+        self.position = config.get("position")
         self.qtile = None
         self.screen = None
+        self.configured = False
 
     def _configure(self, qtile, screen):
         self.qtile = qtile
         self.screen = screen
+        self.x, self.y = None, None
+        self.width, self.height = self.size, self.size
+        self.configured = True
 
     def draw(self):
         pass
 
     @property
     def x(self):
-        screen = self.screen
-        if screen.right is self:
-            return screen.dx + screen.dwidth
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        if self.position == LEFT:
+            self._x = self.screen.dx
+        elif self.position == RIGHT:
+            self._x = self.screen.width - self.screen.bars_whole_width(RIGHT) - self.width
         else:
-            return screen.x
+            self._x = self.screen.dx
 
     @property
     def y(self):
-        screen = self.screen
-        if screen.top is self:
-            return screen.y
-        elif screen.bottom is self:
-            return screen.dy + screen.dheight
-        elif screen.left is self:
-            return screen.dy
-        elif screen.right is self:
-            return screen.y + screen.dy
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        if self.position == TOP:
+            self._y = self.screen.dy
+        elif self.position == BOTTOM:
+            self._y = self.screen.height - self.screen.bars_whole_height(BOTTOM) - self.height
+        else:
+            self._y = self.screen.dy
 
     @property
     def width(self):
-        screen = self.screen
-        if self in [screen.top, screen.bottom]:
-            return screen.width
+        return self._width
+
+    @width.setter
+    def width(self, value):
+        if self.position in [TOP, BOTTOM]:
+            self._width = self.screen.dwidth
         else:
-            return self.size
+            self._width = value
 
     @property
     def height(self):
-        screen = self.screen
-        if self in [screen.top, screen.bottom]:
-            return self.size
+        return self._height
+
+    @height.setter
+    def height(self, value):
+        if self.position in [LEFT, RIGHT]:
+            self._height = self.screen.dheight
         else:
-            return screen.dheight
+            self._height = value
 
     def geometry(self):
         return (self.x, self.y, self.width, self.height)
@@ -97,12 +111,6 @@ class Gap(command.CommandObject):
     def _select(self, name, sel):
         if name == "screen":
             return self.screen
-
-    @property
-    def position(self):
-        for i in ["top", "bottom", "left", "right"]:
-            if getattr(self.screen, i) is self:
-                return i
 
     def info(self):
         return dict(position=self.position)
@@ -143,12 +151,15 @@ class Bar(Gap, configurable.Configurable):
         ("opacity",  1, "Bar window opacity.")
     ]
 
-    def __init__(self, widgets, size, **config):
+    def __init__(self, widgets, **config):
         """
-            - widgets: A list of widget objects.
-            - size: The height of the bar.
+            widgets - A list of widget objects.
+            **config - dictionary describing bar configuration keys:
+                position - specifies bar position, valid values: TOP, RIGHT, BOTTOM, LEFT
+                width - width of the bar (required for position TOP and BOTTOM)
+                height - height of the bar (required for position TOP and BOTTOM)
         """
-        Gap.__init__(self, size)
+        Gap.__init__(self, **config)
         configurable.Configurable.__init__(self, **config)
         self.add_defaults(Bar.defaults)
         self.widgets = widgets
@@ -157,10 +168,6 @@ class Bar(Gap, configurable.Configurable):
         self.queued_draws = 0
 
     def _configure(self, qtile, screen):
-        if not self in [screen.top, screen.bottom]:
-            raise confreader.ConfigError(
-                "Bars must be at the top or the bottom of the screen."
-            )
         if len(filter(lambda w: w.width_type == STRETCH, self.widgets)) > 1:
             raise confreader.ConfigError("Only one STRETCH widget allowed!")
 

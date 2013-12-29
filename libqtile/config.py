@@ -154,9 +154,9 @@ class Screen(command.CommandObject):
         self.y = y
         self.width = width
         self.height = height
-        self.setGroup(group)
         for i in self.gaps:
             i._configure(qtile, self)
+        self.setGroup(group)
 
     @property
     def gaps(self):
@@ -190,7 +190,7 @@ class Screen(command.CommandObject):
         if self.bars is None:
             return 0
         else:
-            bars = [b for b in self.bars if b.position == position]
+            bars = [b for b in self.bars if b.position == position and b.configured]
             return sum(map(lambda b: b.width, bars))
 
     def bars_whole_height(self, position):
@@ -202,7 +202,7 @@ class Screen(command.CommandObject):
         if self.bars is None:
             return 0
         else:
-            bars = [b for b in self.bars if b.position == position]
+            bars = [b for b in self.bars if b.position == position and b.configured]
             return sum(map(lambda b: b.height, bars))
 
     def setGroup(self, new_group):
