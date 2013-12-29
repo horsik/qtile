@@ -124,10 +124,13 @@ class Obj:
     def __repr__(self):
         return self.name
 
+constants = [
+    "STRETCH", "CALCULATED", "STATIC",
+    "TOP", "LEFT", "BOTTOM", "RIGHT", "FLOATING"
+]
 
-STRETCH = Obj("STRETCH")
-CALCULATED = Obj("CALCULATED")
-STATIC = Obj("STATIC")
+for name in constants:
+    vars()[name] = Obj(name)
 
 
 class Bar(Gap, configurable.Configurable):

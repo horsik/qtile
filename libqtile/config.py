@@ -3,7 +3,7 @@ import hook
 import sys
 import utils
 import xcbq
-
+import bar
 
 class Key:
     """
@@ -130,21 +130,14 @@ class Screen(command.CommandObject):
     group = None
     previous_group = None
 
-    def __init__(self, top=None, bottom=None, left=None, right=None,
-                 x=None, y=None, width=None, height=None):
+    def __init__(self, bars=None, x=None, y=None, width=None, height=None):
         """
-            - top, bottom, left, right: Instances of bar objects, or None.
-
-            Note that bar.Bar objects can only be placed at the top or the
-            bottom of the screen (bar.Gap objects can be placed anywhere).
+            - bars: A list containing instances of bar objects, or None.
 
             x,y,width and height aren't specified usually unless you are
             using 'fake screens'.
         """
-        self.top = top
-        self.bottom = bottom
-        self.left = left
-        self.right = right
+        self.bars = bars
         self.qtile = None
         self.index = None
         # x position of upper left corner can be > 0
@@ -167,40 +160,50 @@ class Screen(command.CommandObject):
 
     @property
     def gaps(self):
-        lst = []
-        lst.extend([
-            i for i in [self.top, self.bottom, self.left, self.right] if i
-        ])
-        return lst
+        return self.bars if not self.bars is None else []
 
     @property
     def dx(self):
-        return self.x + self.left.size if self.left else self.x
+        return self.x + self.bars_whole_width(bar.LEFT)
 
     @property
     def dy(self):
-        return self.y + self.top.size if self.top else self.y
+        return self.y + self.bars_whole_height(bar.TOP)
 
     @property
     def dwidth(self):
-        val = self.width
-        if self.left:
-            val -= self.left.size
-        if self.right:
-            val -= self.right.size
-        return val
+        return self.width - (self.bars_whole_width(bar.LEFT) + self.bars_whole_width(bar.RIGHT))
 
     @property
     def dheight(self):
-        val = self.height
-        if self.top:
-            val -= self.top.size
-        if self.bottom:
-            val -= self.bottom.size
-        return val
+        return self.height - (self.bars_whole_height(bar.TOP) + self.bars_whole_height(bar.BOTTOM))
 
     def get_rect(self):
         return ScreenRect(self.dx, self.dy, self.dwidth, self.dheight)
+
+    def bars_whole_width(self, position):
+        """
+            Returns a sum of bar widths on the screen
+
+            position -- specifies position of bars method should process
+        """
+        if self.bars is None:
+            return 0
+        else:
+            bars = [b for b in self.bars if b.position == position]
+            return sum(map(lambda b: b.width, bars))
+
+    def bars_whole_height(self, position):
+        """
+            Returns a sum of bar heights on the screen
+
+            position -- specifies position of bars method should process
+        """
+        if self.bars is None:
+            return 0
+        else:
+            bars = [b for b in self.bars if b.position == position]
+            return sum(map(lambda b: b.height, bars))
 
     def setGroup(self, new_group):
         """
@@ -277,9 +280,8 @@ class Screen(command.CommandObject):
         w = w or self.width
         h = h or self.height
         self._configure(self.qtile, self.index, x, y, w, h, self.group)
-        for bar in [self.top, self.bottom, self.left, self.right]:
-            if bar:
-                bar.draw()
+        for bar in self.bars:
+            bar.draw()
         self.group.layoutAll()
 
     def cmd_info(self):

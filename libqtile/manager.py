@@ -409,6 +409,7 @@ class Qtile(command.CommandObject):
     def update_gaps(self, strut, old_strut=None):
         from libqtile.bar import Gap
 
+        # TODO(horsik) speak to tych0 about this
         (left, right, top, bottom) = strut[:4]
         if old_strut:
             (old_left, old_right, old_top, old_bottom) = old_strut[:4]
