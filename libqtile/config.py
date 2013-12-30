@@ -130,14 +130,17 @@ class Screen(command.CommandObject):
     group = None
     previous_group = None
 
-    def __init__(self, bars=None, x=None, y=None, width=None, height=None):
+    def __init__(self, bars=[], gaps=[], x=None, y=None, width=None, height=None):
         """
-            - bars: A list containing instances of bar objects, or None.
+            - bars: A list containing instances of Bar objects.
+            - gaps: A list containing instances of Gap objects.
+                    You can specify only one gap per position, duplicate values will be omitted
 
             x,y,width and height aren't specified usually unless you are
             using 'fake screens'.
         """
         self.bars = bars
+        self.gaps = gaps
         self.qtile = None
         self.index = None
         # x position of upper left corner can be > 0
@@ -154,13 +157,25 @@ class Screen(command.CommandObject):
         self.y = y
         self.width = width
         self.height = height
-        for i in self.gaps:
+        for i in self.gaps + self.bars:
             i._configure(qtile, self)
         self.setGroup(group)
 
     @property
+    def bars(self):
+        return self._bars if not self._bars is None else []
+
+    @bars.setter
+    def bars(self, value):
+        self._bars = value
+
+    @property
     def gaps(self):
-        return self.bars if not self.bars is None else []
+        return self._gaps.values()
+
+    @gaps.setter
+    def gaps(self, value):
+        self._gaps = {x.position: x for x in value}
 
     @property
     def dx(self):
@@ -181,17 +196,34 @@ class Screen(command.CommandObject):
     def get_rect(self):
         return ScreenRect(self.dx, self.dy, self.dwidth, self.dheight)
 
+    def set_gap(self, gap):
+        """
+            Sets a gap on the given edge of the screen
+
+            - gap: Gap object, you have to specify position and width/height
+
+            Call Screen.resize() to apply changes
+        """
+        self._gaps[gap.position] = gap
+
+    def unset_gap(self, position):
+        """
+            Unsets a gap
+
+            - position: one of the following: bar.TOP, bar.RIGHT, bar.BOTTOM, bar.LEFT
+
+            Call Screen.resize() to apply changes
+        """
+        del self._gaps[position]
+
     def bars_whole_width(self, position):
         """
             Returns a sum of bar widths on the screen
 
             position -- specifies position of bars method should process
         """
-        if self.bars is None:
-            return 0
-        else:
-            bars = [b for b in self.bars if b.position == position and b.configured]
-            return sum(map(lambda b: b.width, bars))
+        bars = [b for b in self.bars + self.gaps if b.position == position and b.configured]
+        return sum(map(lambda b: b.width, bars))
 
     def bars_whole_height(self, position):
         """
@@ -199,11 +231,8 @@ class Screen(command.CommandObject):
 
             position -- specifies position of bars method should process
         """
-        if self.bars is None:
-            return 0
-        else:
-            bars = [b for b in self.bars if b.position == position and b.configured]
-            return sum(map(lambda b: b.height, bars))
+        bars = [b for b in self.bars + self.gaps if b.position == position and b.configured]
+        return sum(map(lambda b: b.height, bars))
 
     def setGroup(self, new_group):
         """
@@ -256,7 +285,7 @@ class Screen(command.CommandObject):
         elif name == "window":
             return (True, [i.window.wid for i in self.group.windows])
         elif name == "bar":
-            return (False, [x.position for x in self.gaps])
+            return (False, [x.position for x in self.bars])
 
     def _select(self, name, sel):
         if name == "layout":
@@ -279,9 +308,11 @@ class Screen(command.CommandObject):
         y = y or self.y
         w = w or self.width
         h = h or self.height
+        for i in self.gaps + self.bars:
+            i.configured = False
+            if hasattr(i, "window"):
+                i.window.kill()
         self._configure(self.qtile, self.index, x, y, w, h, self.group)
-        for bar in self.bars:
-            bar.draw()
         self.group.layoutAll()
 
     def cmd_info(self):

@@ -46,8 +46,8 @@ class Gap(command.CommandObject):
     def _configure(self, qtile, screen):
         self.qtile = qtile
         self.screen = screen
-        self.x, self.y = None, None
         self.width, self.height = self.size, self.size
+        self.x, self.y = None, None
         self.configured = True
 
     def draw(self):

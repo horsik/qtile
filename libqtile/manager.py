@@ -43,6 +43,7 @@ import xcb
 import xcb.xinerama
 import xcb.xproto
 import xcbq
+import bar
 
 from widget.base import _Widget
 
@@ -407,29 +408,26 @@ class Qtile(command.CommandObject):
             self.update_gaps((0, 0, 0, 0), c.strut)
 
     def update_gaps(self, strut, old_strut=None):
-        from libqtile.bar import Gap
-
-        # TODO(horsik) speak to tych0 about this
         (left, right, top, bottom) = strut[:4]
         if old_strut:
             (old_left, old_right, old_top, old_bottom) = old_strut[:4]
-            if not left and old_left:
-                self.currentScreen.left = None
+            if not top and old_top:
+                self.currentScreen.unset_gap(bar.TOP)
             elif not right and old_right:
-                self.currentScreen.right = None
-            elif not top and old_top:
-                self.currentScreen.top = None
+                self.currentScreen.unset_gap(bar.RIGHT)
             elif not bottom and old_bottom:
-                self.currentScreen.bottom = None
+                self.currentScreen.unset_gap(bar.BOTTOM)
+            elif not left and old_left:
+                self.currentScreen.unset_gap(bar.LEFT)
 
         if top:
-            self.currentScreen.top = Gap(top)
-        elif bottom:
-            self.currentScreen.bottom = Gap(bottom)
-        elif left:
-            self.currentScreen.left = Gap(left)
+            self.currentScreen.set_gap(bar.Gap(position=bar.TOP, height=top))
         elif right:
-            self.currentScreen.right = Gap(right)
+            self.currentScreen.set_gap(bar.Gap(position=bar.RIGHT, height=right))
+        elif bottom:
+            self.currentScreen.set_gap(bar.Gap(position=bar.BOTTOM, height=bottom))
+        if left:
+            self.currentScreen.set_gap(bar.Gap(position=bar.LEFT, height=left))
         self.currentScreen.resize()
 
     def manage(self, w):
@@ -915,7 +913,7 @@ class Qtile(command.CommandObject):
         elif name == "widget":
             return False, self.widgetMap.keys()
         elif name == "bar":
-            return False, [x.position for x in self.currentScreen.gaps]
+            return False, [x.position for x in self.currentScreen.bars]
         elif name == "window":
             return True, self.listWID()
         elif name == "screen":

@@ -70,7 +70,7 @@ class _Server(ipc.Server):
         self.qtile = qtile
         self.widgets = {}
         for i in conf.screens:
-            for j in i.gaps:
+            for j in i.bars:
                 if hasattr(j, "widgets"):
                     for w in j.widgets:
                         if w.name:
