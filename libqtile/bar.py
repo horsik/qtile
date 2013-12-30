@@ -37,8 +37,7 @@ class Gap(command.CommandObject):
         other static window.
     """
     def __init__(self, **config):
-        self.size = config.get("width") or config.get("height")
-        self.position = config.get("position")
+        self.config = config
         self.qtile = None
         self.screen = None
         self.configured = False
@@ -46,8 +45,8 @@ class Gap(command.CommandObject):
     def _configure(self, qtile, screen):
         self.qtile = qtile
         self.screen = screen
-        self.width, self.height = self.size, self.size
-        self.x, self.y = None, None
+        self.width, self.height = self.config.get("width"), self.config.get("height")
+        self.x, self.y = self.config.get("x"), self.config.get("y")
         self.configured = True
 
     def draw(self):
@@ -63,6 +62,8 @@ class Gap(command.CommandObject):
             self._x = self.screen.dx
         elif self.position == RIGHT:
             self._x = self.screen.width - self.screen.bars_whole_width(RIGHT) - self.width
+        elif self.position == FLOATING:
+            self._x = value
         else:
             self._x = self.screen.dx
 
@@ -76,6 +77,8 @@ class Gap(command.CommandObject):
             self._y = self.screen.dy
         elif self.position == BOTTOM:
             self._y = self.screen.height - self.screen.bars_whole_height(BOTTOM) - self.height
+        elif self.position == FLOATING:
+            self._y = value
         else:
             self._y = self.screen.dy
 
@@ -100,6 +103,10 @@ class Gap(command.CommandObject):
             self._height = self.screen.dheight
         else:
             self._height = value
+
+    @property
+    def position(self):
+        return self.config.get("position")
 
     def geometry(self):
         return (self.x, self.y, self.width, self.height)
