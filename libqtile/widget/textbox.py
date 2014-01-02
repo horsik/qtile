@@ -15,16 +15,15 @@ class TextBox(base._TextBox):
         ("foreground", "#ffffff", "Foreground colour.")
     ]
 
-    def __init__(self, text=" ", width=bar.CALCULATED, **config):
+    def __init__(self, text=" ", **config):
         """
             - text: Initial widget text.
-            - width: An integer width, bar.STRETCH, or bar.CALCULATED .
         """
-        base._TextBox.__init__(self, text, width, **config)
+        base._TextBox.__init__(self, text, **config)
 
     def update(self, text):
         self.text = text
-        self.bar.draw()
+        self.draw()
 
     def cmd_update(self, text):
         """

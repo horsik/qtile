@@ -242,18 +242,22 @@ class Drawer:
         self.ctx.fill()
         self.ctx.stroke()
 
-    def draw(self, offset, width):
+    def draw(self, x, y, width, height):
         """
-            offset: the X offset to start drawing at.
-            width: the portion of the canvas to draw at the starting point.
+            Copies a part of the pixmap to the physical window
+
+            - x: the x offset to start drawing at.
+            - y: the y offset to start drawing at.
+            - width: the portion of the canvas to draw at the starting point.
+            - height: the portion of the canvas to draw at the starting point.
         """
         self.qtile.conn.conn.core.CopyArea(
             self.pixmap,
             self.wid,
             self.gc,
             0, 0,  # srcx, srcy
-            offset, 0,  # dstx, dsty
-            width, self.height
+            x, y,  # dstx, dsty
+            width, height
         )
 
     def find_root_visual(self):

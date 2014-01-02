@@ -158,26 +158,27 @@ class Bar(Gap, configurable.Configurable):
         ("opacity",  1, "Bar window opacity.")
     ]
 
-    def __init__(self, widgets, **config):
+    def __init__(self, layout, **config):
         """
-            widgets - A list of widget objects.
+            layout - A layout used as a container for widgets.
             **config - dictionary describing bar configuration keys:
                 position - specifies bar position, valid values: TOP, RIGHT, BOTTOM, LEFT
                 width - width of the bar (required for position TOP and BOTTOM)
                 height - height of the bar (required for position TOP and BOTTOM)
         """
+        import widget
+        if not isinstance(layout, widget.layout._Base):
+            raise confreader.ConfigError("Bar object only accepts a layout instance as an argument.")
+
         Gap.__init__(self, **config)
         configurable.Configurable.__init__(self, **config)
         self.add_defaults(Bar.defaults)
-        self.widgets = widgets
+        self.layout = layout
         self.saved_focus = None
 
         self.queued_draws = 0
 
     def _configure(self, qtile, screen):
-        if len(filter(lambda w: w.width_type == STRETCH, self.widgets)) > 1:
-            raise confreader.ConfigError("Only one STRETCH widget allowed!")
-
         Gap._configure(self, qtile, screen)
         self.window = window.Internal.create(
             self.qtile,
@@ -194,37 +195,22 @@ class Bar(Gap, configurable.Configurable):
         self.drawer.clear(self.background)
 
         self.window.handle_Expose = self.handle_Expose
-        self.window.handle_ButtonPress = self.handle_ButtonPress
-        self.window.handle_ButtonRelease = self.handle_ButtonRelease
+        # todo(horsik) enable handling
+        # self.window.handle_ButtonPress = self.handle_ButtonPress
+        # self.window.handle_ButtonRelease = self.handle_ButtonRelease
         qtile.windowMap[self.window.window.wid] = self.window
         self.window.unhide()
 
-        for i in self.widgets:
-            qtile.registerWidget(i)
-            i._configure(qtile, self)
-        self._resize(self.width, self.widgets)
+        qtile.registerWidget(self.layout)
+        self.layout._configure(qtile, self)
+        self._resize()
 
         # FIXME: These should be targeted better.
         hook.subscribe.setgroup(self.draw)
         hook.subscribe.changegroup(self.draw)
 
-    def _resize(self, width, widgets):
-        stretches = [i for i in widgets if i.width_type == STRETCH]
-        if stretches:
-            stretchspace = width - sum(
-                [i.width for i in widgets if i.width_type != STRETCH]
-            )
-            stretchspace = max(stretchspace, 0)
-            astretch = stretchspace / len(stretches)
-            for i in stretches:
-                i.width = astretch
-            if astretch:
-                i.width += stretchspace % astretch
-
-        offset = 0
-        for i in widgets:
-            i.offset = offset
-            offset += i.width
+    def _resize(self):
+        self.layout._resize()
 
     def handle_Expose(self, e):
         self.draw()
@@ -280,22 +266,19 @@ class Bar(Gap, configurable.Configurable):
 
     def _actual_draw(self):
         self.queued_draws = 0
-        self._resize(self.width, self.widgets)
-        for i in self.widgets:
-            i.draw()
-        if self.widgets:
-            end = i.offset + i.width
-            if end < self.width:
-                self.drawer.draw(end, self.width - end)
+        self._resize()
 
         # have to return False here to avoid getting called again
         return False
 
     def info(self):
         return dict(
+            x=self.x,
+            y=self.y,
             width=self.width,
+            height=self.height,
             position=self.position,
-            widgets=[i.info() for i in self.widgets],
+            layout=self.layout,
             window=self.window.window.wid
         )
 

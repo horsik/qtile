@@ -9,22 +9,10 @@ CENTER = object()
 
 
 class _Widget(command.CommandObject, configurable.Configurable):
-    """
-        If width is set to the special value bar.STRETCH, the bar itself
-        will set the width to the maximum remaining space, after all other
-        widgets have been configured. Only ONE widget per bar can have the
-        bar.STRETCH width set.
-
-        The offset attribute is set by the Bar after all widgets have been
-        configured.
-    """
     offset = None
     defaults = [("background", None, "Widget background color")]
 
-    def __init__(self, width, **config):
-        """
-            width: bar.STRETCH, bar.CALCULATED, or a specified width.
-        """
+    def __init__(self, **config):
         command.CommandObject.__init__(self)
         self.name = self.__class__.__name__.lower()
         if "name" in config:
@@ -35,18 +23,15 @@ class _Widget(command.CommandObject, configurable.Configurable):
         configurable.Configurable.__init__(self, **config)
         self.add_defaults(_Widget.defaults)
 
-        if width in (bar.CALCULATED, bar.STRETCH):
-            self.width_type = width
-            self.width = 0
-        else:
-            self.width_type = bar.STATIC
-            self.width = width
+        self.x, self.y = config.get("x"), config.get("y")
+        self.width, self.height = config.get("width"), config.get("height")
+
         self.configured = False
 
     @property
     def width(self):
-        if self.width_type == bar.CALCULATED:
-            return int(self.calculate_width())
+        if self._width is None:
+            return self.layout.width + self.actual_padding * 2
         return self._width
 
     @width.setter
@@ -54,29 +39,44 @@ class _Widget(command.CommandObject, configurable.Configurable):
         self._width = value
 
     @property
+    def height(self):
+        if self._height is None:
+            return self.layout.height + self.actual_padding * 2
+        else:
+            return self._height
+
+    @height.setter
+    def height(self, value):
+        self._height = value
+
+    @property
     def win(self):
         return self.bar.window.window
 
-    def _configure(self, qtile, bar):
+    def _configure(self, qtile, bar, parent):
         self.qtile = qtile
         self.bar = bar
+        self.parent = parent
         self.drawer = drawer.Drawer(
             qtile,
             self.win.wid,
-            self.bar.width,
-            self.bar.height
+            self.parent.width,
+            self.parent.height
         )
+
         self.configured = True
 
     def clear(self):
         self.drawer.set_source_rgb(self.bar.background)
-        self.drawer.fillrect(self.offset, 0, self.width, self.bar.size)
+        self.drawer.fillrect(self.x, self.y, self.width, self.height)
 
     def info(self):
         return dict(
             name=self.__class__.__name__,
-            offset=self.offset,
+            x=self.x,
+            y=self.y,
             width=self.width,
+            height=self.height,
         )
 
     def button_press(self, x, y, button):
@@ -116,17 +116,19 @@ class _Widget(command.CommandObject, configurable.Configurable):
         """
         raise NotImplementedError
 
-    def calculate_width(self):
-        """
-            Must be implemented if the widget can take CALCULATED for width.
-        """
-        raise NotImplementedError
-
-    def timeout_add(self, seconds, method, method_args=()):
+    def timeout_add(self, seconds, method, method_args=(),
+                    callback=None, callback_args=()):
         """
             This method calls either ``gobject.timeout_add`` or
             ``gobject.timeout_add_seconds`` with same arguments. Latter is
             better for battery usage, but works only with integer timeouts.
+
+            If callback is supplied, it runs method in a separate thread
+            and then a callback at the end.
+            *_args should be a tuple of arguments to supply to appropriate
+            functions.
+            !Callback function should return False, otherwise it would be
+            re-run forever!
         """
         self.log.debug('Adding timer for %r in %.2fs', method, seconds)
         if int(seconds) == seconds:
@@ -148,7 +150,7 @@ class _TextBox(_Widget):
     """
     defaults = [
         ("font", "Arial", "Default font"),
-        ("fontsize", None, "Font size. Calculated if None."),
+        ("fontsize", 0, "Font size. Calculated if 0."),
         ("padding", None, "Padding. Calculated if None."),
         ("foreground", "ffffff", "Foreground colour"),
         (
@@ -158,9 +160,9 @@ class _TextBox(_Widget):
         ),
     ]
 
-    def __init__(self, text=" ", width=bar.CALCULATED, **config):
+    def __init__(self, text=" ", **config):
         self.layout = None
-        _Widget.__init__(self, width, **config)
+        _Widget.__init__(self, **config)
         self.text = text
         self.add_defaults(_TextBox.defaults)
 
@@ -195,16 +197,25 @@ class _TextBox(_Widget):
             self.layout.font_shadow = value
 
     @property
+    def fontsize(self):
+        return self._fontsize
+
+    @fontsize.setter
+    def fontsize(self, value):
+        self._fontsize = value
+        if self.layout:
+            self.layout.font_size = value
+
+    @property
     def actual_padding(self):
         if self.padding is None:
-            return self.fontsize / 2
+            # todo(horsik) this needs refactoring, it's only left-right padding
+            return 0
         else:
             return self.padding
 
-    def _configure(self, qtile, bar):
-        _Widget._configure(self, qtile, bar)
-        if self.fontsize is None:
-            self.fontsize = self.bar.height - self.bar.height / 5
+    def _configure(self, qtile, bar, parent):
+        _Widget._configure(self, qtile, bar, parent)
         self.layout = self.drawer.textlayout(
             self.text,
             self.foreground,
@@ -213,22 +224,24 @@ class _TextBox(_Widget):
             self.fontshadow,
         )
 
-    def calculate_width(self):
-        if self.text:
-            return min(
-                self.layout.width,
-                self.bar.width
-            ) + self.actual_padding * 2
-        else:
-            return 0
-
     def draw(self):
+        """
+            This is not the right way to set font size!
+            http://code.stapelberg.de/git/i3/tree/libi3/font.c?h=next#n444
+            http://code.stapelberg.de/git/i3/tree/libi3/font.c?h=next#n135
+        """
+        if self.width > self.height:
+            self.fontsize = self.height - self.height / 5
+        else:
+            self.fontsize = self.width / (len(self.text) * 0.5)
+        # todo(horsik) see above
+
         self.drawer.clear(self.background or self.bar.background)
         self.layout.draw(
             self.actual_padding or 0,
-            int(self.bar.height / 2.0 - self.layout.height / 2.0) + 1
+            int(self.height / 2.0 - self.layout.height / 2.0)
         )
-        self.drawer.draw(self.offset, self.width)
+        self.drawer.draw(self.x, self.y, self.width, self.height)
 
     def cmd_set_font(self, font=UNSPECIFIED, fontsize=UNSPECIFIED,
                      fontshadow=UNSPECIFIED):
@@ -242,44 +255,4 @@ class _TextBox(_Widget):
             self.fontsize = fontsize
         if fontshadow is not UNSPECIFIED:
             self.fontshadow = fontshadow
-        self.bar.draw()
-
-
-# these two classes below look SUSPICIOUSLY similar
-
-class PaddingMixin(object):
-    """
-        Mixin that provides padding(_x|_y|)
-
-        To use it, subclass and add this to __init__:
-
-            self.add_defaults(base.PaddingMixin.defaults)
-    """
-
-    defaults = [
-        ("padding", 3, "Padding inside the box"),
-        ("padding_x", None, "X Padding. Overrides 'padding' if set"),
-        ("padding_y", None, "Y Padding. Overrides 'padding' if set"),
-    ]
-
-    padding_x = configurable.ExtraFallback('padding_x', 'padding')
-    padding_y = configurable.ExtraFallback('padding_y', 'padding')
-
-
-class MarginMixin(object):
-    """
-        Mixin that provides margin(_x|_y|)
-
-        To use it, subclass and add this to __init__:
-
-            self.add_defaults(base.MarginMixin.defaults)
-    """
-
-    defaults = [
-        ("margin", 3, "Margin inside the box"),
-        ("margin_x", None, "X Margin. Overrides 'margin' if set"),
-        ("margin_y", None, "Y Margin. Overrides 'margin' if set"),
-    ]
-
-    margin_x = configurable.ExtraFallback('margin_x', 'margin')
-    margin_y = configurable.ExtraFallback('margin_y', 'margin')
+        self.draw()

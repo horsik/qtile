@@ -85,11 +85,11 @@ class File(object):
 
         # We delay importing here to avoid a circular import issue when
         # testing.
-        from resources import default_config
         for option in config_options:
             if hasattr(config, option):
                 v = getattr(config, option)
             else:
+                from resources import default_config
                 v = getattr(default_config, option)
             if not hasattr(self, option):
                 setattr(self, option, v)
