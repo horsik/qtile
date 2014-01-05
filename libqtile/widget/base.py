@@ -2,6 +2,7 @@ from .. import command, bar, configurable, drawer
 import gobject
 import logging
 import threading
+from operator import itemgetter
 
 
 LEFT = object()
@@ -31,7 +32,7 @@ class _Widget(command.CommandObject, configurable.Configurable):
     @property
     def width(self):
         if self._width is None:
-            return self.layout.width + self.actual_padding * 2
+            return self.layout.width
         return self._width
 
     @width.setter
@@ -41,7 +42,7 @@ class _Widget(command.CommandObject, configurable.Configurable):
     @property
     def height(self):
         if self._height is None:
-            return self.layout.height + self.actual_padding * 2
+            return self.layout.height
         else:
             return self._height
 
@@ -150,7 +151,7 @@ class _TextBox(_Widget):
     """
     defaults = [
         ("font", "Arial", "Default font"),
-        ("fontsize", 0x1fff, "Font size. Calculated if 0x1fffff."),
+        ("fontsize", 0x1fff, "Font size. Calculated if 0x1fff."),
         ("padding", None, "Padding. Calculated if None."),
         ("foreground", "ffffff", "Foreground colour"),
         (
@@ -164,8 +165,9 @@ class _TextBox(_Widget):
         self.layout = None
         _Widget.__init__(self, **config)
         self.text = text
-        self.add_defaults(_TextBox.defaults)
+        self.padding = config.get("padding")
         self.calculate = config.get("font_size") is None
+        self.add_defaults(_TextBox.defaults)
 
     @property
     def text(self):
@@ -208,12 +210,22 @@ class _TextBox(_Widget):
             self.layout.font_size = value
 
     @property
-    def actual_padding(self):
-        if self.padding is None:
-            # todo(horsik) this needs refactoring, it's only left-right padding
-            return 0
-        else:
-            return self.padding
+    def padding(self):
+        return self._padding
+
+    @padding.setter
+    def padding(self, value):
+        if type(value) == int:
+            self._padding = (value,) * 4
+        elif type(value) == tuple:
+            if len(value) < 4:
+                self._padding = value + (0,) * (4 - len(value))
+            elif len(value) > 4:
+                self._padding = value[:4]
+            else:
+                self._padding = value
+        elif value is None:
+            self._padding = (0, 0, 0, 0)
 
     def _configure(self, qtile, bar, parent):
         _Widget._configure(self, qtile, bar, parent)
@@ -227,21 +239,21 @@ class _TextBox(_Widget):
 
     def draw(self):
         self.drawer.clear(self.background or self.bar.background)
-        self.layout.draw(
-            self.actual_padding or 0,
-            int(self.height / 2.0 - self.layout.height / 2.0)
-        )
+        self.layout.draw(self.padding[1], self.padding[0])
         self.drawer.draw(self.x, self.y, self.width, self.height)
 
         if self.calculate:
             size = self.layout.layout.get_pixel_size()
-            if size[0] > self.width:
-                self.fontsize = self.width * self.fontsize / size[0]
+            width = self.width - sum(itemgetter(1, 3)(self.padding))
+            height = self.height - sum(itemgetter(0, 2)(self.padding))
+            if width < 0 or height < 0:
+                raise command.CommandError("Padding values must be smaller that widget dimensions.")
+            if size[0] > width:
+                self.fontsize = width * self.fontsize / size[0]
                 self.draw()
-            elif size[1] > self.height:
-                self.fontsize = self.height * self.fontsize / size[1]
+            elif size[1] > height:
+                self.fontsize = height * self.fontsize / size[1]
                 self.draw()
-
 
     def cmd_set_font(self, font=UNSPECIFIED, fontsize=UNSPECIFIED,
                      fontshadow=UNSPECIFIED):
