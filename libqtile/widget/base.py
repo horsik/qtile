@@ -150,7 +150,7 @@ class _TextBox(_Widget):
     """
     defaults = [
         ("font", "Arial", "Default font"),
-        ("fontsize", 0, "Font size. Calculated if 0."),
+        ("fontsize", 0x1fff, "Font size. Calculated if 0x1fffff."),
         ("padding", None, "Padding. Calculated if None."),
         ("foreground", "ffffff", "Foreground colour"),
         (
@@ -165,6 +165,7 @@ class _TextBox(_Widget):
         _Widget.__init__(self, **config)
         self.text = text
         self.add_defaults(_TextBox.defaults)
+        self.calculate = config.get("font_size") is None
 
     @property
     def text(self):
@@ -225,23 +226,22 @@ class _TextBox(_Widget):
         )
 
     def draw(self):
-        """
-            This is not the right way to set font size!
-            http://code.stapelberg.de/git/i3/tree/libi3/font.c?h=next#n444
-            http://code.stapelberg.de/git/i3/tree/libi3/font.c?h=next#n135
-        """
-        if self.width > self.height:
-            self.fontsize = self.height - self.height / 5
-        else:
-            self.fontsize = self.width / (len(self.text) * 0.5)
-        # todo(horsik) see above
-
         self.drawer.clear(self.background or self.bar.background)
         self.layout.draw(
             self.actual_padding or 0,
             int(self.height / 2.0 - self.layout.height / 2.0)
         )
         self.drawer.draw(self.x, self.y, self.width, self.height)
+
+        if self.calculate:
+            size = self.layout.layout.get_pixel_size()
+            if size[0] > self.width:
+                self.fontsize = self.width * self.fontsize / size[0]
+                self.draw()
+            elif size[1] > self.height:
+                self.fontsize = self.height * self.fontsize / size[1]
+                self.draw()
+
 
     def cmd_set_font(self, font=UNSPECIFIED, fontsize=UNSPECIFIED,
                      fontshadow=UNSPECIFIED):

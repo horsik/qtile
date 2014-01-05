@@ -267,6 +267,7 @@ class Bar(Gap, configurable.Configurable):
     def _actual_draw(self):
         self.queued_draws = 0
         self._resize()
+        self.layout.draw()
 
         # have to return False here to avoid getting called again
         return False
