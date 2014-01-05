@@ -5,12 +5,12 @@ import threading
 from operator import itemgetter
 
 
-LEFT = object()
+LEFT, RIGHT = object(), object()
+TOP, BOTTOM = object(), object()
 CENTER = object()
 
 
 class _Widget(command.CommandObject, configurable.Configurable):
-    offset = None
     defaults = [("background", None, "Widget background color")]
 
     def __init__(self, **config):
@@ -152,7 +152,6 @@ class _TextBox(_Widget):
     defaults = [
         ("font", "Arial", "Default font"),
         ("fontsize", 0x1fff, "Font size. Calculated if 0x1fff."),
-        ("padding", None, "Padding. Calculated if None."),
         ("foreground", "ffffff", "Foreground colour"),
         (
             "fontshadow",
@@ -166,6 +165,8 @@ class _TextBox(_Widget):
         _Widget.__init__(self, **config)
         self.text = text
         self.padding = config.get("padding")
+        self.align = config.get("align")
+        self.valign = config.get("valign")
         self.calculate = config.get("font_size") is None
         self.add_defaults(_TextBox.defaults)
 
@@ -177,7 +178,9 @@ class _TextBox(_Widget):
     def text(self, value):
         self._text = value
         if self.layout:
+            # todo(horsik) resize parent if width changed
             self.layout.text = value
+            self.draw()
 
     @property
     def font(self):
@@ -188,6 +191,7 @@ class _TextBox(_Widget):
         self._font = value
         if self.layout:
             self.layout.font = value
+            self.draw()
 
     @property
     def fontshadow(self):
@@ -198,6 +202,7 @@ class _TextBox(_Widget):
         self._fontshadow = value
         if self.layout:
             self.layout.font_shadow = value
+            self.draw()
 
     @property
     def fontsize(self):
@@ -208,10 +213,14 @@ class _TextBox(_Widget):
         self._fontsize = value
         if self.layout:
             self.layout.font_size = value
+            self.draw()
 
     @property
     def padding(self):
-        return self._padding
+        if self._padding is None:
+            return (0, 0, 0, 0)
+        else:
+            return self._padding
 
     @padding.setter
     def padding(self, value):
@@ -224,8 +233,44 @@ class _TextBox(_Widget):
                 self._padding = value[:4]
             else:
                 self._padding = value
-        elif value is None:
-            self._padding = (0, 0, 0, 0)
+        else:
+            self._padding = value
+
+    @property
+    def align(self):
+        if self.width < self.text_width:
+            return 0  # there's nothing to align, let me decrease the font size
+        elif self._align == LEFT or self._align is None:
+            return self.padding[3]
+        elif self._align == CENTER:
+            return (self.width - self.text_width) / 2
+        elif self._align == RIGHT:
+            return self.width - self.text_width - self.padding[1]
+
+    @align.setter
+    def align(self, value):
+        if value in (LEFT, CENTER, RIGHT, None):
+            self._align = value
+        else:
+            raise command.CommandError("Invalid align value %.", value)
+
+    @property
+    def valign(self):
+        if self.height < self.text_height:
+            return 0  # there's nothing to align, let me decrease the font size
+        elif self._valign == CENTER or self._valign is None:
+            return (self.height - self.text_height) / 2
+        elif self._valign == TOP:
+            return self.padding[0]
+        elif self._valign == BOTTOM:
+            return self.height - self.text_height - self.padding[2]
+
+    @valign.setter
+    def valign(self, value):
+        if value in (TOP, CENTER, BOTTOM, None):
+            self._valign = value
+        else:
+            raise command.CommandError("Invalid valign value %.", value)
 
     def _configure(self, qtile, bar, parent):
         _Widget._configure(self, qtile, bar, parent)
@@ -237,23 +282,27 @@ class _TextBox(_Widget):
             self.fontshadow,
         )
 
+    def _calculate_font_size(self):
+        valid_width = self.width - sum(itemgetter(1, 3)(self.padding))
+        valid_height = self.height - sum(itemgetter(0, 2)(self.padding))
+
+        if valid_width < 0 or valid_height < 0:
+            raise command.CommandError("Padding values have to be smaller than widget dimensions.")
+
+        if self.text_width > valid_width:
+            self.fontsize = valid_width * self.fontsize / self.text_width
+        elif self.text_height > valid_height:
+            self.fontsize = valid_height * self.fontsize / self.text_height
+
     def draw(self):
+        self.text_width, self.text_height = self.layout.layout.get_pixel_size()
+
         self.drawer.clear(self.background or self.bar.background)
-        self.layout.draw(self.padding[1], self.padding[0])
+        self.layout.draw(self.align, self.valign)
         self.drawer.draw(self.x, self.y, self.width, self.height)
 
         if self.calculate:
-            size = self.layout.layout.get_pixel_size()
-            width = self.width - sum(itemgetter(1, 3)(self.padding))
-            height = self.height - sum(itemgetter(0, 2)(self.padding))
-            if width < 0 or height < 0:
-                raise command.CommandError("Padding values must be smaller that widget dimensions.")
-            if size[0] > width:
-                self.fontsize = width * self.fontsize / size[0]
-                self.draw()
-            elif size[1] > height:
-                self.fontsize = height * self.fontsize / size[1]
-                self.draw()
+            self._calculate_font_size()
 
     def cmd_set_font(self, font=UNSPECIFIED, fontsize=UNSPECIFIED,
                      fontshadow=UNSPECIFIED):
@@ -267,4 +316,3 @@ class _TextBox(_Widget):
             self.fontsize = fontsize
         if fontshadow is not UNSPECIFIED:
             self.fontshadow = fontshadow
-        self.draw()

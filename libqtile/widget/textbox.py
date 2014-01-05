@@ -23,7 +23,6 @@ class TextBox(base._TextBox):
 
     def update(self, text):
         self.text = text
-        self.draw()
 
     def cmd_update(self, text):
         """

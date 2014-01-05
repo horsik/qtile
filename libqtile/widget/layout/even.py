@@ -6,6 +6,9 @@ class Horizontal(_Base):
         _Base.__init__(self, widgets)
 
     def _resize(self):
+        if not self.widgets:
+            return
+
         w = self.width / len(self.widgets)
         reminder = self.height % len(self.widgets)
 
@@ -29,6 +32,9 @@ class Vertical(_Base):
         _Base.__init__(self, widgets)
 
     def _resize(self):
+        if not self.widgets:
+            return
+
         h = self.height / len(self.widgets)
         reminder = self.height % len(self.widgets)
 
