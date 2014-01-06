@@ -203,14 +203,10 @@ class Bar(Gap, configurable.Configurable):
 
         qtile.registerWidget(self.layout)
         self.layout._configure(qtile, self)
-        self._resize()
 
         # FIXME: These should be targeted better.
         hook.subscribe.setgroup(self.draw)
         hook.subscribe.changegroup(self.draw)
-
-    def _resize(self):
-        self.layout._resize()
 
     def handle_Expose(self, e):
         self.draw()
@@ -265,8 +261,9 @@ class Bar(Gap, configurable.Configurable):
             self._actual_draw()
 
     def _actual_draw(self):
-        self.queued_draws = 0
+        self.layout._resize()
         self.layout.draw()
+        self.queued_draws = 0
 
         # have to return False here to avoid getting called again
         return False
