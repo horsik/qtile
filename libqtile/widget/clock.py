@@ -11,22 +11,19 @@ class Clock(base._TextBox):
     """
         A simple but flexible text-based clock.
     """
-    def __init__(self, fmt="%H:%M", width=bar.CALCULATED, **config):
+    def __init__(self, fmt="%H:%M", **config):
         """
             - fmt: A Python datetime format string.
-
-            - width: A fixed width, or bar.CALCULATED to calculate the width
-            automatically (which is recommended).
         """
-        base._TextBox.__init__(self, " ", width, **config)
+        base._TextBox.__init__(self, " ", **config)
         self.fmt = fmt
         self.configured = False
 
-    def _configure(self, qtile, bar):
+    def _configure(self, qtile, bar, parent):
         if not self.configured:
             self.configured = True
             gobject.idle_add(self.update)
-        base._TextBox._configure(self, qtile, bar)
+        base._TextBox._configure(self, qtile, bar, parent)
 
     def update(self):
 
@@ -42,8 +39,6 @@ class Clock(base._TextBox):
         self.text = datetime.fromtimestamp(int(ts + .5)).strftime(self.fmt)
 
         if self.layout.width != old_layout_width:
-            self.bar.draw()
-        else:
-            self.draw()
+            self.parent._resize()
 
         return False
