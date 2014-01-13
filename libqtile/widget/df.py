@@ -20,6 +20,7 @@ import base
 
 from .. import bar
 
+
 class DF(base._TextBox):
     """
     Disk Free Widget
@@ -40,8 +41,9 @@ class DF(base._TextBox):
     measures = {"G": 1024*1024*1024,
                 "M": 1024*1024,
                 "B": 1024}
+
     def __init__(self, interval=60, **config):
-        base._TextBox.__init__(self, '', bar.CALCULATED, **config)
+        base._TextBox.__init__(self, '', **config)
         self.add_defaults(DF.defaults)
         self.interval = interval
         self.user_free = 0

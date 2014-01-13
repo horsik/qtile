@@ -27,7 +27,7 @@ class Volume(base._TextBox):
     ]
 
     def __init__(self, **config):
-        base._TextBox.__init__(self, '0', width=bar.CALCULATED, **config)
+        base._TextBox.__init__(self, '0', **config)
         self.add_defaults(Volume.defaults)
         if self.theme_path:
             self.width_type = bar.STATIC
@@ -36,8 +36,8 @@ class Volume(base._TextBox):
         self.volume = None
         self.timeout_add(self.update_interval, self.update)
 
-    def _configure(self, qtile, bar):
-        base._TextBox._configure(self, qtile, bar)
+    def _configure(self, qtile, bar, parent):
+        base._TextBox._configure(self, qtile, bar, parent)
         if self.theme_path:
             self.setup_images()
 

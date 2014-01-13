@@ -1,18 +1,14 @@
-from .. import bar
-import base
+from textbox import TextBox
+from .. constants import *
 
-
-class Spacer(base._Widget):
+class Spacer(TextBox):
     """
         Just an empty space on the bar. Often used with width equal to
-        bar.STRETCH to push bar widgets to the right edge of the screen.
+        STRETCH to push bar widgets to the right edge of the screen.
     """
-    def __init__(self, width=bar.STRETCH):
+    def __init__(self, width=STRETCH, **config):
         """
-            - width: bar.STRETCH, or a pixel width.
+            - width: STRETCH, or a pixel width.
         """
-        base._Widget.__init__(self, width)
+        TextBox.__init__(self, "", width=width, **config)
 
-    def draw(self):
-        self.drawer.clear(self.bar.background)
-        self.drawer.draw(self.offset, self.width)

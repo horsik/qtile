@@ -58,7 +58,7 @@ class _Battery(base._TextBox):
     ]
 
     def __init__(self, **config):
-        base._TextBox.__init__(self, "BAT", bar.CALCULATED, **config)
+        base._TextBox.__init__(self, "BAT", **config)
         self.add_defaults(_Battery.defaults)
 
     def _load_file(self, name):
@@ -192,6 +192,7 @@ class Battery(_Battery):
         return True
 
 
+# todo(horsik) refactor
 class BatteryIcon(_Battery):
     ''' Battery life indicator widget '''
 

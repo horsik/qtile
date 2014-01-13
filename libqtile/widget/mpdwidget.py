@@ -28,7 +28,7 @@ class Mpd(base._TextBox):
         )
     ]
 
-    def __init__(self, width=bar.CALCULATED, host='localhost', port=6600,
+    def __init__(self, host='localhost', port=6600,
                  password=False, fmt_playing="%a - %t [%v%%]",
                  fmt_stopped="Stopped [%v%%]", msg_nc='Mpd off',
                  do_color_progress=True, **config):
@@ -111,8 +111,8 @@ class Mpd(base._TextBox):
             return False
         return True
 
-    def _configure(self, qtile, bar):
-        base._TextBox._configure(self, qtile, bar)
+    def _configure(self, qtile, bar, parent):
+        base._TextBox._configure(self, qtile, bar, parent)
         self.layout = self.drawer.textlayout(
             self.text,
             self.foreground,

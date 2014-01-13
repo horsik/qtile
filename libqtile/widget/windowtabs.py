@@ -13,13 +13,13 @@ class WindowTabs(base._TextBox):
     ]
 
     def __init__(self, **config):
-        base._TextBox.__init__(self, width=bar.STRETCH, **config)
+        base._TextBox.__init__(self, **config)
         self.add_defaults(WindowTabs.defaults)
         if not isinstance(self.selected, (tuple, list)):
             self.selected = (self.selected, self.selected)
 
-    def _configure(self, qtile, bar):
-        base._TextBox._configure(self, qtile, bar)
+    def _configure(self, qtile, bar, parent):
+        base._TextBox._configure(self, qtile, bar, parent)
         hook.subscribe.window_name_change(self.update)
         hook.subscribe.focus_change(self.update)
         hook.subscribe.float_change(self.update)

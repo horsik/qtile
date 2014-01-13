@@ -29,7 +29,7 @@ class ThermalSensor(base._TextBox):
     ]
 
     def __init__(self, **config):
-        base._TextBox.__init__(self, 'N/A', width=bar.CALCULATED, **config)
+        base._TextBox.__init__(self, 'N/A', **config)
         self.add_defaults(ThermalSensor.defaults)
         self.sensors_temp = re.compile(
             ur"""

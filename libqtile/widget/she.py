@@ -14,7 +14,7 @@ class She(base._TextBox):
         ('update_delay', 0.5, 'Update Time in seconds.'),
     ]
 
-    def __init__(self, width=bar.CALCULATED, **config):
+    def __init__(self, **config):
         base._TextBox.__init__(self, 'CPU', **config)
         self.add_defaults(She.defaults)
         self.modes = {
@@ -36,12 +36,9 @@ class She(base._TextBox):
             mode = self._get_mode()
             if mode != self.mode:
                 self.mode = mode
-                self.draw()
+                if self.mode in self.modes.keys():
+                    self.text = self.modes[self.mode][self.format]
+                else:
+                    self.text = self.mode
+                self.bar.draw()
         return True
-
-    def draw(self):
-        if self.mode in self.modes.keys():
-            self.text = self.modes[self.mode][self.format]
-        else:
-            self.text = self.mode
-        base._TextBox.draw(self)

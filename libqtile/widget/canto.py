@@ -14,8 +14,8 @@ class Canto(base._TextBox):
         ("update_delay", 600, "The delay in seconds between updates"),
     ]
 
-    def __init__(self, width=bar.CALCULATED, **config):
-        base._TextBox.__init__(self, "N/A", width, **config)
+    def __init__(self, **config):
+        TextBox.__init__(self, "N/A", **config)
         self.add_defaults(Canto.defaults)
         self.timeout_add(self.update_delay, self.update)
 

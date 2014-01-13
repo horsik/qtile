@@ -2,7 +2,7 @@ import glob
 import os
 import string
 from .. import bar, xkeysyms, xcbq, command
-import base
+from textbox import TextBox
 
 
 class NullCompleter:
@@ -272,7 +272,7 @@ class CommandCompleter:
         return ret[0]
 
 
-class Prompt(base._TextBox):
+class Prompt(TextBox):
     """
         A widget that prompts for user input. Input should be started using the
         .startInput method on this class.
@@ -288,15 +288,15 @@ class Prompt(base._TextBox):
     defaults = [("cursorblink", 0.5, "Cursor blink rate. 0 to disable.")]
 
     def __init__(self, name="prompt", **config):
-        base._TextBox.__init__(self, "", bar.CALCULATED, **config)
+        TextBox.__init__(self, "", **config)
         self.add_defaults(Prompt.defaults)
         self.name = name
         self.active = False
         self.blink = False
         self.completer = None
 
-    def _configure(self, qtile, bar):
-        base._TextBox._configure(self, qtile, bar)
+    def _configure(self, qtile, bar, parent):
+        TextBox._configure(self, qtile, bar, parent)
 
     def startInput(self, prompt, callback,
                    complete=None, strict_completer=False):

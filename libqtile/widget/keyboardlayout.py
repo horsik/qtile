@@ -13,19 +13,18 @@ class KeyboardLayout(base._TextBox):
         ("update_interval", 1, "Update time in seconds."),
     ]
 
-    def __init__(self, configured_keyboards=['us'],
-                 width=bar.CALCULATED, **config):
+    def __init__(self, configured_keyboards=['us'], **config):
         """
             :configured_keyboards A list of predefined keyboard layouts
             represented as strings. For example: ['us', 'us colemak', 'es', 'fr'].
         """
-        base._TextBox.__init__(self, "", width, **config)
+        base._TextBox.__init__(self, "", **config)
         self.add_defaults(KeyboardLayout.defaults)
         self.configured_keyboards = configured_keyboards
         self.text = self._get_keyboard()
 
-    def _configure(self, qtile, bar):
-        base._TextBox._configure(self, qtile, bar)
+    def _configure(self, qtile, bar, parent):
+        base._TextBox._configure(self, qtile, bar, parent)
         self.text = self._get_keyboard()
         self.timeout_add(self.update_interval, self.update)
 

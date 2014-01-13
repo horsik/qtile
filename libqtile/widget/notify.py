@@ -3,10 +3,10 @@ import sys
 
 from .. import bar, drawer, utils
 from libqtile.notify import notifier
-import base
+from textbox import TextBox
 
 
-class Notify(base._TextBox):
+class Notify(TextBox):
     """
         An notify widget
     """
@@ -20,14 +20,14 @@ class Notify(base._TextBox):
         ),
     ]
 
-    def __init__(self, width=bar.CALCULATED, **config):
-        base._TextBox.__init__(self, "", width, **config)
+    def __init__(self, **config):
+        TextBox.__init__(self, "", **config)
         self.add_defaults(Notify.defaults)
         notifier.register(self.update)
         self.current_id = 0
 
-    def _configure(self, qtile, bar):
-        base._TextBox._configure(self, qtile, bar)
+    def _configure(self, qtile, bar, parent):
+        TextBox._configure(self, qtile, bar, parent)
         self.layout = self.drawer.textlayout(
             self.text,
             self.foreground,

@@ -29,11 +29,11 @@ class Backlight(base._TextBox):
             'Name of file with the '
             'maximum brightness in /sys/class/backlight/backlight_name'
         ),
-        ('update_delay', .2, 'The delay in seconds between updates'),
+        ('update_delay', 1, 'The delay in seconds between updates'),
     ]
 
     def __init__(self, **config):
-        base._TextBox.__init__(self, "LIGHT", bar.CALCULATED, **config)
+        base._TextBox.__init__(self, "LIGHT", **config)
         self.add_defaults(Backlight.defaults)
         self.timeout_add(self.update_delay, self.update)
 

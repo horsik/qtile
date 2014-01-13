@@ -6,11 +6,11 @@ class WindowName(base._TextBox):
     """
         Displays the name of the window that currently has focus.
     """
-    def __init__(self, width=bar.STRETCH, **config):
-        base._TextBox.__init__(self, width=width, **config)
+    def __init__(self, **config):
+        base._TextBox.__init__(self, **config)
 
-    def _configure(self, qtile, bar):
-        base._TextBox._configure(self, qtile, bar)
+    def _configure(self, qtile, bar, parent):
+        base._TextBox._configure(self, qtile, bar, parent)
         hook.subscribe.window_name_change(self.update)
         hook.subscribe.focus_change(self.update)
         hook.subscribe.float_change(self.update)

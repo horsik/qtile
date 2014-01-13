@@ -3,12 +3,11 @@ from .. import bar, hook
 
 
 class CurrentLayout(base._TextBox):
-    def __init__(self, width=bar.CALCULATED, **config):
-        base._TextBox.__init__(self, "", width, **config)
+    def __init__(self, **config):
+        base._TextBox.__init__(self, "", **config)
 
-    def _configure(self, qtile, bar):
-        base._TextBox._configure(self, qtile, bar)
-        self.text = self.bar.screen.group.layouts[0].name
+    def _configure(self, qtile, bar, parent):
+        base._TextBox._configure(self, qtile, bar, parent)
         self.setup_hooks()
 
     def setup_hooks(self):

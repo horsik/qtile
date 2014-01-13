@@ -7,7 +7,7 @@ class Wlan(base._TextBox):
     """
         Displays Wifi ssid and quality.
     """
-    def __init__(self, interface="wlan0", width=bar.CALCULATED, **config):
+    def __init__(self, interface="wlan0", **config):
         """
             - interface: Wlan interface name.
 
@@ -18,8 +18,8 @@ class Wlan(base._TextBox):
         base._TextBox.__init__(self, " ", width, **config)
         self.timeout_add(1, self.update)
 
-    def _configure(self, qtile, bar):
-        base._TextBox._configure(self, qtile, bar)
+    def _configure(self, qtile, bar, parent):
+        base._TextBox._configure(self, qtile, bar, parent)
 
     def update(self):
         if self.configured:
