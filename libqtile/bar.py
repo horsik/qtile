@@ -195,9 +195,8 @@ class Bar(Gap, configurable.Configurable):
         self.drawer.clear(self.background)
 
         self.window.handle_Expose = self.handle_Expose
-        # todo(horsik) enable handling
-        # self.window.handle_ButtonPress = self.handle_ButtonPress
-        # self.window.handle_ButtonRelease = self.handle_ButtonRelease
+        self.window.handle_ButtonPress = self.layout.handle_ButtonPress
+        self.window.handle_ButtonRelease = self.layout.handle_ButtonRelease
         qtile.windowMap[self.window.window.wid] = self.window
         self.window.unhide()
 
@@ -210,29 +209,6 @@ class Bar(Gap, configurable.Configurable):
 
     def handle_Expose(self, e):
         self.draw()
-
-    def get_widget_in_position(self, e):
-        for i in self.widgets:
-            if e.event_x < i.offset + i.width:
-                return i
-
-    def handle_ButtonPress(self, e):
-        widget = self.get_widget_in_position(e)
-        if widget:
-            widget.button_press(
-                e.event_x - widget.offset,
-                e.event_y,
-                e.detail
-            )
-
-    def handle_ButtonRelease(self, e):
-        widget = self.get_widget_in_position(e)
-        if widget:
-            widget.button_release(
-                e.event_x - widget.offset,
-                e.event_y,
-                e.detail
-            )
 
     def widget_grab_keyboard(self, widget):
         """

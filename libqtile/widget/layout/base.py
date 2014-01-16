@@ -57,3 +57,30 @@ class _Base(configurable.Configurable):
         self.bar.drawer.draw(self.x, self.y, self.width, self.height)
         for i in self.widgets:
             i.draw()
+
+    def get_widget_in_position(self, e):
+        for i in self.widgets:
+            if i.x < e.event_x < i.x + i.width and i.y < e.event_y < i.y + i.height:
+                return i
+
+    def handle_ButtonPress(self, e):
+        widget = self.get_widget_in_position(e)
+        if isinstance(widget, _Base):
+            widget.handle_ButtonPress(e)
+        elif widget:
+            widget.button_press(
+                e.event_x - widget.x,
+                e.event_y - widget.y,
+                e.detail
+            )
+
+    def handle_ButtonRelease(self, e):
+        widget = self.get_widget_in_position(e)
+        if isinstance(widget, _Base):
+            widget.handle_ButtonRelease(e)
+        elif widget:
+            widget.button_release(
+                e.event_x - widget.x,
+                e.event_y - widget.y,
+                e.detail
+            )
