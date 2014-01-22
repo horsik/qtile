@@ -29,6 +29,7 @@ import gobject
 
 USE_BAR_DRAW_QUEUE = True
 
+
 class Gap(command.CommandObject):
     """
         A gap, placed along one of the edges of the screen. If a gap has been
@@ -255,6 +256,7 @@ class Bar(Gap, configurable.Configurable):
             window=self.window.window.wid
         )
 
+    # todo(horsik) should be adapted
     def cmd_fake_button_press(self, screen, position, x, y, button=1):
         """
             Fake a mouse-button-press on the bar. Co-ordinates are relative

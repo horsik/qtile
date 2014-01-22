@@ -11,22 +11,20 @@ CENTER = object()
 
 
 class _Widget(command.CommandObject, configurable.Configurable):
-    defaults = [("background", None, "Widget background color")]
+    defaults = [
+        ("background", None, "Widget background color"),
+        ("width", None, "Width of a widget, calculated if None"),
+        ("height", None, "Height of a widget, calculated if None"),
+    ]
 
     def __init__(self, **config):
         command.CommandObject.__init__(self)
         self.name = self.__class__.__name__.lower()
-        if "name" in config:
-            self.name = config["name"]
 
         self.log = logging.getLogger('qtile')
 
         configurable.Configurable.__init__(self, **config)
         self.add_defaults(_Widget.defaults)
-        self.config = config
-
-        self.x, self.y = config.get("x"), config.get("y")
-        self.width, self.height = config.get("width"), config.get("height")
 
         self.configured = False
 
@@ -160,15 +158,15 @@ class _TextBox(_Widget):
             None,
             "font shadow color, default is None(no shadow)"
         ),
+        ("padding", None, "Widget padding in pixels"),
+        ("align", LEFT, "Horizontal text padding"),
+        ("valign", CENTER, "Vertical text padding"),
     ]
 
     def __init__(self, text=" ", **config):
         self.layout = None
-        _Widget.__init__(self, **config)
         self.text = text
-        self.padding = config.get("padding")
-        self.align = config.get("align")
-        self.valign = config.get("valign")
+        _Widget.__init__(self, **config)
         self.add_defaults(_TextBox.defaults)
 
     @property
@@ -239,7 +237,7 @@ class _TextBox(_Widget):
     def align(self):
         if self.width < self.text_width:
             return 0  # there's nothing to align
-        elif self._align == LEFT or self._align is None:
+        elif self._align == LEFT:
             return self.padding[3]
         elif self._align == CENTER:
             return (self.width - self.text_width) / 2
@@ -248,7 +246,7 @@ class _TextBox(_Widget):
 
     @align.setter
     def align(self, value):
-        if value in (LEFT, CENTER, RIGHT, None):
+        if value in (LEFT, CENTER, RIGHT):
             self._align = value
         else:
             raise command.CommandError("Invalid align value %.", value)
@@ -257,7 +255,7 @@ class _TextBox(_Widget):
     def valign(self):
         if self.height < self.text_height:
             return 0  # there's nothing to align
-        elif self._valign == CENTER or self._valign is None:
+        elif self._valign == CENTER:
             return (self.height - self.text_height) / 2
         elif self._valign == TOP:
             return self.padding[0]
@@ -266,7 +264,7 @@ class _TextBox(_Widget):
 
     @valign.setter
     def valign(self, value):
-        if value in (TOP, CENTER, BOTTOM, None):
+        if value in (TOP, CENTER, BOTTOM):
             self._valign = value
         else:
             raise command.CommandError("Invalid valign value %.", value)
@@ -299,7 +297,7 @@ class _TextBox(_Widget):
         self.layout.draw(self.align, self.valign)
         self.drawer.draw(self.x, self.y, self.width, self.height)
 
-        if self.config.get("fontsize"):
+        if self._user_config.get("fontsize"):
             self._calculate_font_size()
 
     def cmd_set_font(self, font=UNSPECIFIED, fontsize=UNSPECIFIED,

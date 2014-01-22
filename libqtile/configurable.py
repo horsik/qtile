@@ -42,23 +42,3 @@ class Configurable(object):
             return getattr(self, name)
         else:
             raise AttributeError("no attribute: %s" % name)
-
-
-class ExtraFallback(object):
-    """
-        Adds another layer of fallback to attributes - to look up
-        a different attribute name
-    """
-
-    def __init__(self, name, fallback):
-        self.name = name
-        self.fallback = fallback
-
-    def __get__(self, instance, owner=None):
-        try:
-            retval = instance.__dict__[self.name]
-        except KeyError:
-            retval = Configurable.__getattr__(instance, self.fallback)
-            setattr(instance, self.name, retval)
-
-        return retval

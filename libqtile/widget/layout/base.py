@@ -15,13 +15,13 @@ class _Base(configurable.Configurable):
     @property
     def inner_width(self):
         return \
-            [max(w.layout.width, w.config.get("width")) for w in self.widgets if not isinstance(w, _Base)] + \
+            [max(w.layout.width, w._user_config.get("width")) for w in self.widgets if not isinstance(w, _Base)] + \
             [l.get_inner_width() for l in self.widgets if isinstance(l, _Base)] + [0]
 
     @property
     def inner_height(self):
         return \
-            [max(w.layout.height, w.config.get("height")) for w in self.widgets if not isinstance(w, _Base)] + \
+            [max(w.layout.height, w._user_config.get("height")) for w in self.widgets if not isinstance(w, _Base)] + \
             [l.get_inner_height() for l in self.widgets if isinstance(l, _Base)] + [0]
 
     def __init__(self, widgets, **config):
