@@ -46,6 +46,7 @@ class Gap(command.CommandObject):
     def _configure(self, qtile, screen):
         self.qtile = qtile
         self.screen = screen
+        # todo(horsik) refactor
         self.width, self.height = self.config.get("width"), self.config.get("height")
         self.x, self.y = self.config.get("x"), self.config.get("y")
         self.configured = True

@@ -2,7 +2,6 @@ from .. import command, bar, configurable, drawer
 import gobject
 import logging
 import threading
-from operator import itemgetter
 
 
 LEFT, RIGHT = object(), object()
@@ -31,7 +30,7 @@ class _Widget(command.CommandObject, configurable.Configurable):
     @property
     def width(self):
         if self._width is None:
-            return self.layout.width
+            return self.inner_width
         else:
             return self._width
 
@@ -40,15 +39,23 @@ class _Widget(command.CommandObject, configurable.Configurable):
         self._width = value
 
     @property
+    def inner_width(self):
+        return self.layout.width + self.padding.left + self.padding.right
+
+    @property
     def height(self):
         if self._height is None:
-            return self.layout.height
+            return self.inner_height
         else:
             return self._height
 
     @height.setter
     def height(self, value):
         self._height = value
+
+    @property
+    def inner_height(self):
+        return self.layout.height + self.padding.top + self.padding.bottom
 
     @property
     def win(self):
@@ -211,38 +218,34 @@ class _TextBox(_Widget):
 
     @property
     def padding(self):
-        # todo(horsik) padding temporarily broken
-        return (0, 0, 0, 0)
-
-        if self._padding is None:
-            return (0, 0, 0, 0)
-        else:
-            return self._padding
+        return self._padding
 
     @padding.setter
     def padding(self, value):
         if type(value) == int:
-            self._padding = (value,) * 4
+            value = (value,) * 4
         elif type(value) == tuple:
-            if len(value) < 4:
-                self._padding = value + (0,) * (4 - len(value))
-            elif len(value) > 4:
-                self._padding = value[:4]
-            else:
-                self._padding = value
+            value += (0,) * (4 - len(value))
         else:
-            self._padding = value
+            value = (0, 0, 0, 0)
+
+        self._padding = type('padding', (object,), {
+            "top": value[0],
+            "right": value[1],
+            "bottom": value[2],
+            "left": value[3],
+        })
 
     @property
     def align(self):
         if self.width < self.text_width:
             return 0  # there's nothing to align
         elif self._align == LEFT:
-            return self.padding[3]
+            return self.padding.left
         elif self._align == CENTER:
             return (self.width - self.text_width) / 2
         elif self._align == RIGHT:
-            return self.width - self.text_width - self.padding[1]
+            return self.width - self.text_width - self.padding.right
 
     @align.setter
     def align(self, value):
@@ -258,9 +261,9 @@ class _TextBox(_Widget):
         elif self._valign == CENTER:
             return (self.height - self.text_height) / 2
         elif self._valign == TOP:
-            return self.padding[0]
+            return self.padding.top
         elif self._valign == BOTTOM:
-            return self.height - self.text_height - self.padding[2]
+            return self.height - self.text_height - self.padding.bottom
 
     @valign.setter
     def valign(self, value):
@@ -280,15 +283,18 @@ class _TextBox(_Widget):
         )
 
     def _calculate_font_size(self):
-        if self.text_width > self.width:
-            self.fontsize = self.width * self.fontsize / self.text_width
-        elif self.text_height > self.height:
-            self.fontsize = self.height * self.fontsize / self.text_height
+        width = self.width - (self.padding.left + self.padding.right)
+        height = self.height - (self.padding.top + self.padding.bottom)
+
+        if self.text_width > width > 0:
+            self.fontsize = width * self.fontsize / self.text_width
+        elif self.text_height > height > 0:
+            self.fontsize = height * self.fontsize / self.text_height
         else:
             return True
 
-        self.draw()
-        self.layout._resize()
+        # widget size changed, stop drawing bar and start over
+        return False
 
     def draw(self):
         self.text_width, self.text_height = self.layout.layout.get_pixel_size()
@@ -297,8 +303,7 @@ class _TextBox(_Widget):
         self.layout.draw(self.align, self.valign)
         self.drawer.draw(self.x, self.y, self.width, self.height)
 
-        if self._user_config.get("fontsize"):
-            self._calculate_font_size()
+        return self._calculate_font_size()
 
     def cmd_set_font(self, font=UNSPECIFIED, fontsize=UNSPECIFIED,
                      fontshadow=UNSPECIFIED):

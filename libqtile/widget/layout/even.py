@@ -5,6 +5,15 @@ class Horizontal(_Base):
     def __init__(self, widgets, **config):
         _Base.__init__(self, widgets, **config)
 
+    @property
+    def inner_width(self):
+        widths = self._calculate_children_widths()
+        return max(widths) * (len(widths) - 1)
+
+    @property
+    def inner_height(self):
+        return max(self._calculate_children_heights())
+
     def _resize(self):
         if not self.widgets:
             return
@@ -26,16 +35,19 @@ class Horizontal(_Base):
             if isinstance(i, _Base):
                 i._resize()
 
-    def get_inner_width(self):
-        return max(self.inner_width) * (len(self.inner_width) - 1)
-
-    def get_inner_height(self):
-        return max(self.inner_height)
-
 
 class Vertical(_Base):
     def __init__(self, widgets, **config):
         _Base.__init__(self, widgets, **config)
+
+    @property
+    def inner_width(self):
+        return max(self._calculate_children_widths())
+
+    @property
+    def inner_height(self):
+        heights = self._calculate_children_heights()
+        return max(heights) * (len(heights) - 1)
 
     def _resize(self):
         if not self.widgets:
@@ -57,9 +69,3 @@ class Vertical(_Base):
 
             if isinstance(i, _Base):
                 i._resize()
-
-    def get_inner_width(self):
-        return max(self.inner_width)
-
-    def get_inner_height(self):
-        return max(self.inner_height) * (len(self.inner_height) - 1)
