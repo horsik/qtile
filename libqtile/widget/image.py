@@ -4,23 +4,27 @@ import cairo
 import base
 from .. import bar
 
-class Image(base._Widget, base.MarginMixin):
+class Image(base._Widget):
 
     defaults = [
         ("scale", True, "Enable/Disable image scaling"),
         ("filename", None, "PNG Image filename. Can contain '~'"),
     ]
 
-    def __init__(self, width=bar.CALCULATED, **config):
-        base._Widget.__init__(self, width, **config)
+    def __init__(self, **config):
+        base._Widget.__init__(self, **config)
         self.add_defaults(Image.defaults)
-        self.add_defaults(base.MarginMixin.defaults)
 
-        # make the default 0 instead
-        self._widget_defaults["margin"] = 0
+    @property
+    def inner_width(self):
+        return self.image.get_width() + self.padding.horizontal
 
-    def _configure(self, qtile, bar):
-        base._Widget._configure(self, qtile, bar)
+    @property
+    def inner_height(self):
+        return self.image.get_height() + self.padding.vertical
+
+    def _configure(self, qtile, bar, parent):
+        base._Widget._configure(self, qtile, bar, parent)
 
         if not self.filename:
             raise ValueError("Filename not set!")
@@ -35,29 +39,25 @@ class Image(base._Widget, base.MarginMixin):
 
         self.pattern = cairo.SurfacePattern(self.image)
 
-        self.image_width = self.image.get_width()
-        self.image_height = self.image.get_height()
-
-        if self.scale:
-            new_height = self.bar.height - (self.margin_y * 2)
-
-            if new_height and self.image_height != new_height:
-                scaler = cairo.Matrix()
-                sp = self.image_height / float(new_height)
-                self.image_height = new_height
-                self.image_width = int(self.image_width / sp)
-                scaler.scale(sp, sp)
-                self.pattern.set_matrix(scaler)
-
     def draw(self):
-        self.drawer.clear(self.bar.background)
+        width = self.width - self.padding.horizontal
+        height = self.height - self.padding.vertical
+
+        if width <= 0 or height <= 0:
+            raise ValueError("Padding cannot be bigger than image size")
+
+        scaler = cairo.Matrix()
+        sw = self.image.get_width() / float(width)
+        sh = self.image.get_height() / float(height)
+        scaler.scale(sw, sh)
+        self.pattern.set_matrix(scaler)
+
+        self.drawer.clear(self.background or self.bar.background)
         self.drawer.ctx.save()
-        self.drawer.ctx.translate(self.margin_x, self.margin_y)
+        self.drawer.ctx.translate(self.padding.left, self.padding.top)
         self.drawer.ctx.set_source(self.pattern)
         self.drawer.ctx.paint()
         self.drawer.ctx.restore()
 
-        self.drawer.draw(self.offset, self.width)
+        self.drawer.draw(self.x, self.y, self.width, self.height)
 
-    def calculate_width(self):
-        return self.image_width + (self.margin_x * 2)

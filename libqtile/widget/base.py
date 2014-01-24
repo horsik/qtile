@@ -14,6 +14,7 @@ class _Widget(command.CommandObject, configurable.Configurable):
         ("background", None, "Widget background color"),
         ("width", None, "Width of a widget, calculated if None"),
         ("height", None, "Height of a widget, calculated if None"),
+        ("padding", None, "Widget padding in pixels"),
     ]
 
     def __init__(self, **config):
@@ -39,10 +40,6 @@ class _Widget(command.CommandObject, configurable.Configurable):
         self._width = value
 
     @property
-    def inner_width(self):
-        return self.layout.width + self.padding.left + self.padding.right
-
-    @property
     def height(self):
         if self._height is None:
             return self.inner_height
@@ -54,8 +51,26 @@ class _Widget(command.CommandObject, configurable.Configurable):
         self._height = value
 
     @property
-    def inner_height(self):
-        return self.layout.height + self.padding.top + self.padding.bottom
+    def padding(self):
+        return self._padding
+
+    @padding.setter
+    def padding(self, value):
+        if type(value) == int:
+            value = (value,) * 4
+        elif type(value) == tuple:
+            value += (0,) * (4 - len(value))
+        else:
+            value = (0, 0, 0, 0)
+
+        self._padding = type('padding', (object,), {
+            "top": value[0],
+            "right": value[1],
+            "bottom": value[2],
+            "left": value[3],
+            "vertical": value[0] + value[2],
+            "horizontal": value[1] + value[3],
+        })
 
     @property
     def win(self):
@@ -165,7 +180,6 @@ class _TextBox(_Widget):
             None,
             "font shadow color, default is None(no shadow)"
         ),
-        ("padding", None, "Widget padding in pixels"),
         ("align", LEFT, "Horizontal text padding"),
         ("valign", CENTER, "Vertical text padding"),
     ]
@@ -175,6 +189,14 @@ class _TextBox(_Widget):
         self.text = text
         _Widget.__init__(self, **config)
         self.add_defaults(_TextBox.defaults)
+
+    @property
+    def inner_width(self):
+        return self.layout.width + self.padding.horizontal
+
+    @property
+    def inner_height(self):
+        return self.layout.height + self.padding.vertical
 
     @property
     def text(self):
@@ -215,26 +237,6 @@ class _TextBox(_Widget):
         self._fontsize = value
         if self.layout:
             self.layout.font_size = value
-
-    @property
-    def padding(self):
-        return self._padding
-
-    @padding.setter
-    def padding(self, value):
-        if type(value) == int:
-            value = (value,) * 4
-        elif type(value) == tuple:
-            value += (0,) * (4 - len(value))
-        else:
-            value = (0, 0, 0, 0)
-
-        self._padding = type('padding', (object,), {
-            "top": value[0],
-            "right": value[1],
-            "bottom": value[2],
-            "left": value[3],
-        })
 
     @property
     def align(self):
@@ -283,8 +285,8 @@ class _TextBox(_Widget):
         )
 
     def _calculate_font_size(self):
-        width = self.width - (self.padding.left + self.padding.right)
-        height = self.height - (self.padding.top + self.padding.bottom)
+        width = self.width - self.padding.horizontal
+        height = self.height - self.padding.vertical
 
         if self.text_width > width > 0:
             self.fontsize = width * self.fontsize / self.text_width
