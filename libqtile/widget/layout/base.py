@@ -47,9 +47,15 @@ class _Base(configurable.Configurable):
 
             Returns an array of widths of items inside a layout
         """
-        return \
-            [max(w.inner_width, w._user_config.get("width")) for w in self.widgets if not isinstance(w, _Base)] + \
-            [l.inner_width for l in self.widgets if isinstance(l, _Base)] + [0]
+        widgets, layouts = [], []
+
+        for w in self.widgets:
+            if isinstance(w, _Base):
+                layouts += w.inner_width
+            else:
+                widgets += max(w.inner_width, w._user_config.get("width"))
+
+        return widgets + layouts + [0]
 
     def _calculate_children_heights(self):
         """
@@ -57,9 +63,15 @@ class _Base(configurable.Configurable):
 
             Returns an array of heights of items inside a layout
         """
-        return \
-            [max(w.inner_height, w._user_config.get("width")) for w in self.widgets if not isinstance(w, _Base)] + \
-            [l.inner_height for l in self.widgets if isinstance(l, _Base)] + [0]
+        widgets, layouts = [], []
+
+        for w in self.widgets:
+            if isinstance(w, _Base):
+                layouts += w.inner_height
+            else:
+                widgets += max(w.inner_height, w._user_config.get("height"))
+
+        return widgets + layouts + [0]
 
     def draw(self):
         self.bar.drawer.draw(self.x, self.y, self.width, self.height)
@@ -72,7 +84,8 @@ class _Base(configurable.Configurable):
 
     def get_widget_in_position(self, e):
         for i in self.widgets:
-            if i.x < e.event_x < i.x + i.width and i.y < e.event_y < i.y + i.height:
+            if i.x < e.event_x < i.x + i.width and \
+               i.y < e.event_y < i.y + i.height:
                 return i
 
     def handle_ButtonPress(self, e):

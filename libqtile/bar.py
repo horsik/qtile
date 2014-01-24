@@ -47,7 +47,8 @@ class Gap(command.CommandObject):
         self.qtile = qtile
         self.screen = screen
         # todo(horsik) refactor
-        self.width, self.height = self.config.get("width"), self.config.get("height")
+        self.width = self.config.get("width")
+        self.height = self.config.get("height")
         self.x, self.y = self.config.get("x"), self.config.get("y")
         self.configured = True
 
@@ -63,7 +64,8 @@ class Gap(command.CommandObject):
         if self.position == LEFT:
             self._x = self.screen.dx
         elif self.position == RIGHT:
-            self._x = self.screen.width - self.screen.bars_whole_width(RIGHT) - self.width
+            self._x = self.screen.width - \
+                    self.screen.bars_whole_width(RIGHT) - self.width
         elif self.position == FLOATING:
             self._x = value
         else:
@@ -78,7 +80,8 @@ class Gap(command.CommandObject):
         if self.position == TOP:
             self._y = self.screen.dy
         elif self.position == BOTTOM:
-            self._y = self.screen.height - self.screen.bars_whole_height(BOTTOM) - self.height
+            self._y = self.screen.height - \
+                    self.screen.bars_whole_height(BOTTOM) - self.height
         elif self.position == FLOATING:
             self._y = value
         else:
@@ -163,14 +166,16 @@ class Bar(Gap, configurable.Configurable):
     def __init__(self, layout, **config):
         """
             layout - A layout used as a container for widgets.
-            **config - dictionary describing bar configuration keys:
-                position - specifies bar position, valid values: TOP, RIGHT, BOTTOM, LEFT
-                width - width of the bar (required for position TOP and BOTTOM)
-                height - height of the bar (required for position TOP and BOTTOM)
+                
+            You can pass following arguments in kwargs:  
+            position - specifies bar position, valid: TOP, RIGHT, BOTTOM, LEFT
+            width - width of the bar (required for position TOP and BOTTOM)
+            height - height of the bar (required for position TOP and BOTTOM)
         """
         import widget
         if not isinstance(layout, widget.layout._Base):
-            raise confreader.ConfigError("Bar object only accepts a layout instance as an argument.")
+            raise confreader.ConfigError(
+                "Bar object only accepts a layout instance as an argument.")
 
         Gap.__init__(self, **config)
         configurable.Configurable.__init__(self, **config)
@@ -273,3 +278,4 @@ class Bar(Gap, configurable.Configurable):
         fake.event_y = y
         fake.detail = button
         self.handle_ButtonPress(fake)
+

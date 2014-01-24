@@ -421,13 +421,17 @@ class Qtile(command.CommandObject):
                 self.currentScreen.unset_gap(bar.LEFT)
 
         if top:
-            self.currentScreen.set_gap(bar.Gap(position=bar.TOP, height=top))
+            self.currentScreen.set_gap(
+                bar.Gap(position=bar.TOP, height=top))
         elif right:
-            self.currentScreen.set_gap(bar.Gap(position=bar.RIGHT, height=right))
+            self.currentScreen.set_gap(
+                bar.Gap(position=bar.RIGHT, height=right))
         elif bottom:
-            self.currentScreen.set_gap(bar.Gap(position=bar.BOTTOM, height=bottom))
+            self.currentScreen.set_gap(
+                bar.Gap(position=bar.BOTTOM, height=bottom))
         if left:
-            self.currentScreen.set_gap(bar.Gap(position=bar.LEFT, height=left))
+            self.currentScreen.set_gap(
+                bar.Gap(position=bar.LEFT, height=left))
         self.currentScreen.resize()
 
     def manage(self, w):

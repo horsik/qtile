@@ -130,13 +130,15 @@ class Screen(command.CommandObject):
     group = None
     previous_group = None
 
-    def __init__(self, bars=[], gaps=[], x=None, y=None, width=None, height=None):
+    def __init__(self, bars=[], gaps=[], 
+                 x=None, y=None, width=None, height=None):
         """
             - bars: A list containing instances of Bar objects.
             - gaps: A list containing instances of Gap objects.
-                    You can specify only one gap per position, duplicate values will be omitted
+                    You can specify only one gap per position,
+                    duplicate values will be omitted
 
-            x,y,width and height aren't specified usually unless you are
+            x, y, width and height aren't specified usually unless you are
             using 'fake screens'.
         """
         self.bars = bars
@@ -187,11 +189,13 @@ class Screen(command.CommandObject):
 
     @property
     def dwidth(self):
-        return self.width - (self.bars_whole_width(bar.LEFT) + self.bars_whole_width(bar.RIGHT))
+        return self.width - (self.bars_whole_width(bar.LEFT) + \
+               self.bars_whole_width(bar.RIGHT))
 
     @property
     def dheight(self):
-        return self.height - (self.bars_whole_height(bar.TOP) + self.bars_whole_height(bar.BOTTOM))
+        return self.height - (self.bars_whole_height(bar.TOP) + \
+               self.bars_whole_height(bar.BOTTOM))
 
     def get_rect(self):
         return ScreenRect(self.dx, self.dy, self.dwidth, self.dheight)
@@ -210,7 +214,7 @@ class Screen(command.CommandObject):
         """
             Unsets a gap
 
-            - position: one of the following: bar.TOP, bar.RIGHT, bar.BOTTOM, bar.LEFT
+            - position: bar.TOP, bar.RIGHT, bar.BOTTOM, bar.LEFT
 
             Call Screen.resize() to apply changes
         """
@@ -222,7 +226,11 @@ class Screen(command.CommandObject):
 
             position -- specifies position of bars method should process
         """
-        bars = [b for b in self.bars + self.gaps if b.position == position and b.configured]
+        bars = [] 
+        for b in self.bars + self.gaps:
+            if b.position == position and b.configured:
+                bars.append(b)
+
         return sum(map(lambda b: b.width, bars))
 
     def bars_whole_height(self, position):
@@ -231,7 +239,11 @@ class Screen(command.CommandObject):
 
             position -- specifies position of bars method should process
         """
-        bars = [b for b in self.bars + self.gaps if b.position == position and b.configured]
+        bars = [] 
+        for b in self.bars + self.gaps:
+            if b.position == position and b.configured:
+                bars.append(b)
+
         return sum(map(lambda b: b.height, bars))
 
     def setGroup(self, new_group):
@@ -370,13 +382,16 @@ class Group(object):
         """
         :param name: the name of this group
         :type name: string
-        :param matches: list of ``Match`` objects whose  windows will be assigned to this group
+        :param matches: list of ``Match``
+                        objects whose  windows will be assigned to this group
         :type matches: default ``None``
-        :param exclusive: when other apps are started in this group, should we allow them here or not?
+        :param exclusive: when other apps are started in this group,
+                          should we allow them here or not?
         :type exclusive: boolean
         :param spawn: this will be ``exec()`` d when the group is created
         :type spawn: string
-        :param layout: the default layout for this group (e.g. 'max' or 'stack')
+        :param layout: the default layout for this group
+                       (e.g. 'max' or 'stack')
         :type layout: string
         :param persist: should this group stay alive with no member windows?
         :type persist: boolean
@@ -480,3 +495,4 @@ class Rule(object):
 
     def matches(self, w):
         return self.match.compare(w)
+
