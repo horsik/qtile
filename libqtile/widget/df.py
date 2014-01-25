@@ -16,12 +16,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import base
+from textbox import TextBox
 
 from .. import bar
 
 
-class DF(base._TextBox):
+class DF(TextBox):
     """
     Disk Free Widget
 
@@ -43,7 +43,7 @@ class DF(base._TextBox):
                 "B": 1024}
 
     def __init__(self, interval=60, **config):
-        base._TextBox.__init__(self, '', **config)
+        TextBox.__init__(self, '', **config)
         self.add_defaults(DF.defaults)
         self.interval = interval
         self.user_free = 0
@@ -57,7 +57,7 @@ class DF(base._TextBox):
         else:
             self.layout.colour = self.foreground
 
-        base._TextBox.draw(self)
+        TextBox.draw(self)
 
     def update(self):
         statvfs = os.statvfs(self.partition)

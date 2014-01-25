@@ -1,14 +1,14 @@
 import cairo
 import os
 from libqtile import bar
-import base
+from textbox import TextBox
 
 BACKLIGHT_DIR = '/sys/class/backlight'
 
 FORMAT = '{percent: 2.0%}'
 
 
-class Backlight(base._TextBox):
+class Backlight(TextBox):
     """
         A simple widget to show the current brightness of a monitor.
     """
@@ -33,7 +33,7 @@ class Backlight(base._TextBox):
     ]
 
     def __init__(self, **config):
-        base._TextBox.__init__(self, "LIGHT", **config)
+        TextBox.__init__(self, "LIGHT", **config)
         self.add_defaults(Backlight.defaults)
         self.timeout_add(self.update_delay, self.update)
 

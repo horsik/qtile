@@ -1,10 +1,10 @@
 import subprocess
 from subprocess import CalledProcessError
-import base
+from textbox import TextBox
 from .. import bar
 
 
-class KeyboardLayout(base._TextBox):
+class KeyboardLayout(TextBox):
     """
         Widget for changing and displaying the current keyboard layout.
         It requires setxkbmap to be available in the sytem.
@@ -18,13 +18,13 @@ class KeyboardLayout(base._TextBox):
             :configured_keyboards A list of predefined keyboard layouts
             represented as strings. For example: ['us', 'us colemak', 'es', 'fr'].
         """
-        base._TextBox.__init__(self, "", **config)
+        TextBox.__init__(self, "", **config)
         self.add_defaults(KeyboardLayout.defaults)
         self.configured_keyboards = configured_keyboards
         self.text = self._get_keyboard()
 
     def _configure(self, qtile, bar, parent):
-        base._TextBox._configure(self, qtile, bar, parent)
+        TextBox._configure(self, qtile, bar, parent)
         self.text = self._get_keyboard()
         self.timeout_add(self.update_interval, self.update)
 

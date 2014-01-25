@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .. import bar
-import base
+from textbox import TextBox
 import urllib
 import urllib2
 from xml.dom import minidom
@@ -19,7 +19,7 @@ WEATHER_URL = 'http://weather.yahooapis.com/forecastrss?'
 WEATHER_NS = 'http://xml.weather.yahoo.com/ns/rss/1.0'
 
 
-class YahooWeather(base._TextBox):
+class YahooWeather(TextBox):
     ''' A weather widget, data provided by the Yahoo! Weather API
         Format options:
             astronomy_sunrise, astronomy_sunset
@@ -56,10 +56,10 @@ class YahooWeather(base._TextBox):
     ]
 
     def __init__(self, **config):
-        base._TextBox.__init__(self, 'N/A', width=bar.CALCULATED, **config)
+        TextBox.__init__(self, 'N/A', width=bar.CALCULATED, **config)
 
     def _configure(self, qtile, bar):
-        base._TextBox._configure(self, qtile, bar)
+        TextBox._configure(self, qtile, bar)
         self.add_defaults(YahooWeather.defaults)
         self.timeout_add(self.update_interval, self.wx_updater)
 

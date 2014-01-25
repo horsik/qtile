@@ -1,13 +1,13 @@
-import base
+from textbox import TextBox
 from .. import bar, hook
 
 
-class CurrentLayout(base._TextBox):
+class CurrentLayout(TextBox):
     def __init__(self, **config):
-        base._TextBox.__init__(self, "", **config)
+        TextBox.__init__(self, "", **config)
 
     def _configure(self, qtile, bar, parent):
-        base._TextBox._configure(self, qtile, bar, parent)
+        TextBox._configure(self, qtile, bar, parent)
         self.setup_hooks()
 
     def setup_hooks(self):

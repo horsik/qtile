@@ -53,7 +53,7 @@
 ###################################################################
 
 from .. import bar, utils
-import base
+from textbox import TextBox
 import httplib2
 import logging
 import os
@@ -72,7 +72,7 @@ from oauth2client.tools import run
 import oauth2client.file
 
 
-class GoogleCalendar(base._TextBox):
+class GoogleCalendar(TextBox):
     ''' This widget will display the next appointment on your Google calendar
         in the qtile status bar. Appointments within the "reminder" time will
         be highlighted. Authentication credentials are stored in a file on
@@ -107,7 +107,7 @@ class GoogleCalendar(base._TextBox):
     ]
 
     def __init__(self, **config):
-        base._TextBox.__init__(self, 'Calendar not initialized',
+        TextBox.__init__(self, 'Calendar not initialized',
                                width=bar.CALCULATED, **config)
         self.cred_init()
         # confirm credentials every hour
@@ -115,7 +115,7 @@ class GoogleCalendar(base._TextBox):
         self.timeout_add(self.update_interval, self.cal_updater)
 
     def _configure(self, qtile, bar):
-        base._TextBox._configure(self, qtile, bar)
+        TextBox._configure(self, qtile, bar)
         self.add_defaults(GoogleCalendar.defaults)
         self.layout = self.drawer.textlayout(
             self.text,

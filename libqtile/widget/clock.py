@@ -2,12 +2,12 @@ from time import time
 from datetime import datetime
 
 from .. import bar
-import base
+from textbox import TextBox
 
 import gobject
 
 
-class Clock(base._TextBox):
+class Clock(TextBox):
     """
         A simple but flexible text-based clock.
     """
@@ -18,7 +18,7 @@ class Clock(base._TextBox):
             - width: A fixed width, or bar.CALCULATED to calculate the width
             automatically (which is recommended).
         """
-        base._TextBox.__init__(self, " ", **config)
+        TextBox.__init__(self, " ", **config)
         self.fmt = fmt
         self.configured = False
 
@@ -26,7 +26,7 @@ class Clock(base._TextBox):
         if not self.configured:
             self.configured = True
             gobject.idle_add(self.update)
-        base._TextBox._configure(self, qtile, bar, parent)
+        TextBox._configure(self, qtile, bar, parent)
 
     def update(self):
 

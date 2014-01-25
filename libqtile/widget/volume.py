@@ -4,7 +4,7 @@ import subprocess
 
 import cairo
 
-import base
+from textbox import TextBox
 from .. import bar
 
 __all__ = [
@@ -14,7 +14,7 @@ __all__ = [
 re_vol = re.compile('\[(\d?\d?\d?)%\]')
 
 
-class Volume(base._TextBox):
+class Volume(TextBox):
     ''' Widget that display and change volume
         if theme_path is set it draw widget as
         icons '''
@@ -27,7 +27,7 @@ class Volume(base._TextBox):
     ]
 
     def __init__(self, **config):
-        base._TextBox.__init__(self, '0', **config)
+        TextBox.__init__(self, '0', **config)
         self.add_defaults(Volume.defaults)
         if self.theme_path:
             self.width_type = bar.STATIC
@@ -37,7 +37,7 @@ class Volume(base._TextBox):
         self.timeout_add(self.update_interval, self.update)
 
     def _configure(self, qtile, bar, parent):
-        base._TextBox._configure(self, qtile, bar, parent)
+        TextBox._configure(self, qtile, bar, parent)
         if self.theme_path:
             self.setup_images()
 
@@ -171,4 +171,4 @@ class Volume(base._TextBox):
         if self.theme_path:
             self.drawer.draw(self.offset, self.width)
         else:
-            base._TextBox.draw(self)
+            TextBox.draw(self)

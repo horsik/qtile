@@ -2,11 +2,11 @@ import dbus
 
 from dbus.mainloop.glib import DBusGMainLoop
 
-import base
+from textbox import TextBox
 from .. import bar
 
 
-class Mpris(base._TextBox):
+class Mpris(TextBox):
     """
     A widget which displays the current track/artist of your favorite MPRIS
     player. It should work with all players which implement a reasonably
@@ -15,7 +15,7 @@ class Mpris(base._TextBox):
 
     def __init__(self, name="clementine",
                  objname='org.mpris.clementine', **config):
-        base._TextBox.__init__(self, " ", width, **config)
+        TextBox.__init__(self, " ", width, **config)
 
         # we need a main loop to get event signals
         # we just piggyback on qtile's main loop

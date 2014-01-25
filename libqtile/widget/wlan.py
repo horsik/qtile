@@ -1,9 +1,9 @@
 from .. import hook, bar
-import base
+from textbox import TextBox
 from pythonwifi.iwlibs import Wireless, Iwstats
 
 
-class Wlan(base._TextBox):
+class Wlan(TextBox):
     """
         Displays Wifi ssid and quality.
     """
@@ -15,11 +15,11 @@ class Wlan(base._TextBox):
             automatically (which is recommended).
         """
         self.interface = interface
-        base._TextBox.__init__(self, " ", width, **config)
+        TextBox.__init__(self, " ", width, **config)
         self.timeout_add(1, self.update)
 
     def _configure(self, qtile, bar, parent):
-        base._TextBox._configure(self, qtile, bar, parent)
+        TextBox._configure(self, qtile, bar, parent)
 
     def update(self):
         if self.configured:

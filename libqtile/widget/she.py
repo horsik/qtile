@@ -1,10 +1,10 @@
-from libqtile.widget import base
+from textbox import TextBox
 from libqtile import bar, hook
 
 __all__ = ['She']
 
 
-class She(base._TextBox):
+class She(TextBox):
     ''' Widget to display the Super Hybrid Engine status.
     can display either the mode or CPU speed on eeepc computers.'''
 
@@ -15,7 +15,7 @@ class She(base._TextBox):
     ]
 
     def __init__(self, **config):
-        base._TextBox.__init__(self, 'CPU', **config)
+        TextBox.__init__(self, 'CPU', **config)
         self.add_defaults(She.defaults)
         self.modes = {
             '0x300': {'name': 'Performance', 'speed': '1.6GHz'},

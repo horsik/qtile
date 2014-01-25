@@ -2,13 +2,13 @@ from .. import bar, hook, utils
 import base
 
 
-class _GroupBase(base._TextBox, base.PaddingMixin, base.MarginMixin):
+class _GroupBase(TextBox, base.PaddingMixin, base.MarginMixin):
     defaults = [
         ("borderwidth", 3, "Current group border width"),
     ]
 
     def __init__(self, **config):
-        base._TextBox.__init__(self, bar.CALCULATED, **config)
+        TextBox.__init__(self, bar.CALCULATED, **config)
         self.add_defaults(_GroupBase.defaults)
         self.add_defaults(base.PaddingMixin.defaults)
         self.add_defaults(base.MarginMixin.defaults)

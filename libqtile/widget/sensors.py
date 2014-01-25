@@ -2,12 +2,12 @@
 # coding: utf-8
 
 from .. import bar
-import base
+from textbox import TextBox
 from subprocess import Popen, PIPE
 import re
 
 
-class ThermalSensor(base._TextBox):
+class ThermalSensor(TextBox):
     '''
     For using the thermal sensor widget you need to have lm-sensors installed.
     You can get a list of the tag_sensors executing "sensors" in your terminal.
@@ -29,7 +29,7 @@ class ThermalSensor(base._TextBox):
     ]
 
     def __init__(self, **config):
-        base._TextBox.__init__(self, 'N/A', **config)
+        TextBox.__init__(self, 'N/A', **config)
         self.add_defaults(ThermalSensor.defaults)
         self.sensors_temp = re.compile(
             ur"""

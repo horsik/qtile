@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 # vim: set sw=4 et tw=80:
 
-import base
+from textbox import TextBox
 from .. import bar
 
 import os.path
 import mailbox
 
 
-class Maildir(base._TextBox):
+class Maildir(TextBox):
     """
     A simple widget showing the number of new mails in maildir mailboxes.
     """
@@ -23,7 +23,7 @@ class Maildir(base._TextBox):
         @param separator: the string to put between the subfolder strings.
         @param timeout: the refresh timeout in seconds.
         """
-        base._TextBox.__init__(self, "", **config)
+        TextBox.__init__(self, "", **config)
         self._maildirPath = os.path.expanduser(maildirPath)
         self._separator = separator
         self._timeout = timeout

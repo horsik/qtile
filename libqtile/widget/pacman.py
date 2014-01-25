@@ -15,21 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import base
+from textbox import TextBox
 
 from .. import bar
 
 import subprocess
 
 
-class Pacman(base._TextBox):
+class Pacman(TextBox):
     """
     Shows number of available updates.
     """
     defaults = [('unavailable', 'ffffff', 'Unavailable Color - no updates.')]
 
     def __init__(self, execute=None, interval=60, **config):
-        base._TextBox.__init__(self, '', **config)
+        TextBox.__init__(self, '', **config)
         self.add_defaults(Pacman.defaults)
         self.interval = interval
         self.execute = execute
@@ -41,7 +41,7 @@ class Pacman(base._TextBox):
             self.layout.colour = self.unavailable
         else:
             self.layout.colour = self.foreground
-        base._TextBox.draw(self)
+        TextBox.draw(self)
 
     def updates(self):
         pacman = subprocess.Popen(['checkupdates'], stdout=subprocess.PIPE)

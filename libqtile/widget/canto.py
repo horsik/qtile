@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from .. import bar
-import base
+from textbox import TextBox
 from subprocess import check_output, call
 
 
-class Canto(base._TextBox):
+class Canto(TextBox):
     defaults = [
         ("fetch", False, "Whether to fetch new items on update"),
         ("feeds", [], "List of feeds to display, empty for all"),

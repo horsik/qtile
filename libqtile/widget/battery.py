@@ -1,7 +1,7 @@
 import cairo
 import os
 from libqtile import bar
-import base
+from textbox import TextBox
 
 BAT_DIR = '/sys/class/power_supply'
 CHARGED = 'Full'
@@ -23,7 +23,7 @@ def default_icon_path():
     return os.path.join(root, 'resources', 'battery-icons')
 
 
-class _Battery(base._TextBox):
+class _Battery(TextBox):
     ''' Base battery class '''
 
     filenames = {}
@@ -58,7 +58,7 @@ class _Battery(base._TextBox):
     ]
 
     def __init__(self, **config):
-        base._TextBox.__init__(self, "BAT", **config)
+        TextBox.__init__(self, "BAT", **config)
         self.add_defaults(_Battery.defaults)
 
     def _load_file(self, name):
@@ -226,7 +226,7 @@ class BatteryIcon(_Battery):
         self.timeout_add(self.update_delay, self.update)
 
     def _configure(self, qtile, bar):
-        base._TextBox._configure(self, qtile, bar)
+        TextBox._configure(self, qtile, bar)
         self.setup_images()
 
     def _get_icon_key(self):
@@ -267,7 +267,7 @@ class BatteryIcon(_Battery):
             self.drawer.draw(self.offset, self.width)
         else:
             self.text = self.current_icon[8:]
-            base._TextBox.draw(self)
+            TextBox.draw(self)
 
     def setup_images(self):
         for key, name in self.icons.iteritems():

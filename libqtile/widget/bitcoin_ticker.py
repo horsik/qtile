@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from .. import bar
-import base
+from textbox import TextBox
+
 import urllib
 import urllib2
 import gobject
@@ -14,7 +15,7 @@ except ImportError:
     import simplejson as json
 
 
-class BitcoinTicker(base._TextBox):
+class BitcoinTicker(TextBox):
     ''' A bitcoin ticker widget, data provided by the MtGox API
         Format options:
             buy, sell
@@ -35,10 +36,10 @@ class BitcoinTicker(base._TextBox):
     ]
 
     def __init__(self, **config):
-        base._TextBox.__init__(self, 'N/A', width=bar.CALCULATED, **config)
+        TextBox.__init__(self, 'N/A', width=bar.CALCULATED, **config)
 
     def _configure(self, qtile, bar):
-        base._TextBox._configure(self, qtile, bar)
+        TextBox._configure(self, qtile, bar)
         self.add_defaults(BitcoinTicker.defaults)
         self.timeout_add(self.update_interval, self.wx_updater)
 
