@@ -21,6 +21,7 @@ class Horizontal(_Base):
 
             if isinstance(i, _Base):
                 i.width = i._user_config.get("width") or i.inner_width
+                i.height = i._user_config.get("height") or i.inner_height
 
             x += i.width
 
@@ -47,7 +48,8 @@ class Vertical(_Base):
             i.y = y
 
             if isinstance(i, _Base):
-                i.height = i._user_config.get("width") or i.inner_height()
+                i.height = i._user_config.get("height") or i.inner_height
+                i.width = i._user_config.get("width") or i.inner_width
 
             y += i.height
 
