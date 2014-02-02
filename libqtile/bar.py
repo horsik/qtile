@@ -24,6 +24,7 @@ import drawer
 import hook
 import configurable
 import window
+from constants import *
 
 import gobject
 
@@ -132,25 +133,6 @@ class Gap(command.CommandObject):
             Info for this object.
         """
         return self.info()
-
-
-class Obj:
-    def __init__(self, name):
-        self.name = name
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return self.name
-
-constants = [
-    "STRETCH", "CALCULATED", "STATIC",
-    "TOP", "LEFT", "BOTTOM", "RIGHT", "FLOATING"
-]
-
-for name in constants:
-    vars()[name] = Obj(name)
 
 
 class Bar(Gap, configurable.Configurable):

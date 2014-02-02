@@ -1,7 +1,7 @@
 from .. import bar
+from .. constants import *
 import base
 
-LEFT, RIGHT, TOP, BOTTOM, CENTER, UNSPECIFIED = (object(),) * 6
 
 class TextBox(base._Widget):
     """
