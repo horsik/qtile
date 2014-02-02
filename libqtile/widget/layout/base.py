@@ -51,9 +51,9 @@ class _Base(configurable.Configurable):
 
         for w in self.widgets:
             if isinstance(w, _Base):
-                layouts += w.inner_width
+                layouts.append(w.inner_width)
             else:
-                widgets += max(w.inner_width, w._user_config.get("width"))
+                widgets.append(max(w.inner_width, w._user_config.get("width")))
 
         return widgets + layouts + [0]
 
@@ -67,9 +67,10 @@ class _Base(configurable.Configurable):
 
         for w in self.widgets:
             if isinstance(w, _Base):
-                layouts += w.inner_height
+                layouts.append(w.inner_height)
             else:
-                widgets += max(w.inner_height, w._user_config.get("height"))
+                widgets.append(max(w.inner_height,
+                                   w._user_config.get("height")))
 
         return widgets + layouts + [0]
 
