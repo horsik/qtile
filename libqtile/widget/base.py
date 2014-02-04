@@ -35,6 +35,10 @@ class _Widget(command.CommandObject, configurable.Configurable):
         self._width = value
 
     @property
+    def config_width(self):
+        return self._user_config.get("width")
+
+    @property
     def height(self):
         if self._height is None:
             return self.inner_height
@@ -44,6 +48,10 @@ class _Widget(command.CommandObject, configurable.Configurable):
     @height.setter
     def height(self, value):
         self._height = value
+
+    @property
+    def config_height(self):
+        return self._user_config.get("height")
 
     @property
     def padding(self):

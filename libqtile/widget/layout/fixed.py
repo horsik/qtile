@@ -1,4 +1,5 @@
 from base import _Base
+from ... constants import *
 
 
 class Horizontal(_Base):
@@ -15,13 +16,19 @@ class Horizontal(_Base):
 
     def _resize(self):
         x, y = self.x, self.y
-        for i in self.widgets:
-            i.x = x
-            i.y = y
 
-            if isinstance(i, _Base):
-                i.width = i._user_config.get("width") or i.inner_width
-                i.height = i._user_config.get("height") or i.inner_height
+        stretched = [w for w in self.widgets if w.config_width == STRETCH]
+        fixed = set(self.widgets) - set(stretched)
+        available = self.width - sum(self._get_child_width(w) for w in fixed)
+
+        for i in self.widgets:
+            i.x, i.y = x, y
+            i.height = self.height
+
+            if i.config_width == STRETCH:
+                i.width = available / len(stretched)
+            else:
+                i.width = self._get_child_width(i)
 
             x += i.width
 
@@ -43,15 +50,22 @@ class Vertical(_Base):
 
     def _resize(self):
         x, y = self.x, self.y
-        for i in self.widgets:
-            i.x = x
-            i.y = y
 
-            if isinstance(i, _Base):
-                i.height = i._user_config.get("height") or i.inner_height
-                i.width = i._user_config.get("width") or i.inner_width
+        stretched = [w for w in self.widgets if w.config_height == STRETCH]
+        fixed = set(self.widgets) - set(stretched)
+        available = self.height - sum(self._get_child_height(w) for w in fixed)
+
+        for i in self.widgets:
+            i.x, i.y = x, y
+            i.width = self.width
+
+            if i.config_height == STRETCH:
+                i.height = available / len(stretched)
+            else:
+                i.height = self._get_child_height(i)
 
             y += i.height
 
             if isinstance(i, _Base):
                 i._resize()
+

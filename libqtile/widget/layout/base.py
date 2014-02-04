@@ -18,6 +18,14 @@ class _Base(configurable.Configurable):
         configurable.Configurable.__init__(self, **config)
         self.add_defaults(_Base.defaults)
 
+    @property
+    def config_width(self):
+        return self._user_config.get("width")
+
+    @property
+    def config_height(self):
+        return self._user_config.get("height")
+
     def _configure(self, qtile, bar, parent=None):
         if parent is None:
             self.parent, parent = bar, self
@@ -41,6 +49,18 @@ class _Base(configurable.Configurable):
         """
         raise NotImplementedError
 
+    def _get_child_width(self, i):
+        if isinstance(i, _Base):
+            return i.config_width or i.inner_width
+        else:
+            return i.width
+
+    def _get_child_height(self, i):
+        if isinstance(i, _Base):
+            return i.config_height or i.inner_height
+        else:
+            return i.height
+
     def _calculate_children_widths(self):
         """
             Internal method used only by fixed layout
@@ -53,7 +73,7 @@ class _Base(configurable.Configurable):
             if isinstance(w, _Base):
                 layouts.append(w.inner_width)
             else:
-                widgets.append(max(w.inner_width, w._user_config.get("width")))
+                widgets.append(max(w.inner_width, w.config_width))
 
         return widgets + layouts + [0]
 
@@ -69,8 +89,7 @@ class _Base(configurable.Configurable):
             if isinstance(w, _Base):
                 layouts.append(w.inner_height)
             else:
-                widgets.append(max(w.inner_height,
-                                   w._user_config.get("height")))
+                widgets.append(max(w.inner_height, w.config_height))
 
         return widgets + layouts + [0]
 
@@ -110,3 +129,4 @@ class _Base(configurable.Configurable):
                 e.event_y - widget.y,
                 e.detail
             )
+
