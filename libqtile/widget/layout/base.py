@@ -5,18 +5,10 @@ class _Base(configurable.Configurable):
     """
         This class is a base for every widget layout
     """
-    defaults = [
-        ("x", 0, "Horizontal offset absolute to bar"),
-        ("y", 0, "Vertical offset absoute to bar"),
-        ("width", None, "Width of a layout"),
-        ("height", None, "Height of a layout"),
-    ]
-
     def __init__(self, widgets, **config):
         self.name = self.__class__.__name__.lower()
         self.widgets = widgets
         configurable.Configurable.__init__(self, **config)
-        self.add_defaults(_Base.defaults)
 
     @property
     def config_width(self):
@@ -27,17 +19,26 @@ class _Base(configurable.Configurable):
         return self._user_config.get("height")
 
     def _configure(self, qtile, bar, parent=None):
-        if parent is None:
-            self.parent, parent = bar, self
-        else:
-            self.parent = parent
+        """
+            Configures the layout
 
-        # assume maximum layout size
-        # it might be changed when parent does _resize
-        if not self.width: self.width = self.parent.width
-        if not self.height: self.height = self.parent.height
-
+            Initial width and height is set to parent's dimmensions.
+            All of the widgets being direct children of this layout
+            will use these to create drawers ensuring that canvas
+            is the same size as its parent
+        """
+        self.parent = parent if parent else bar
         self.bar = bar
+
+        defaults = [
+            ("x", 0, "Horizontal offset absolute to bar"),
+            ("y", 0, "Vertical offset absoute to bar"),
+            ("width", self.parent.width, "Width of a layout"),
+            ("height", self.parent.height, "Height of a layout"),
+            ("background", self.parent.background, "Widget background color"),
+        ]
+
+        self.add_defaults(defaults)
 
         for i in self.widgets:
             qtile.registerWidget(i)
@@ -50,16 +51,10 @@ class _Base(configurable.Configurable):
         raise NotImplementedError
 
     def _get_child_width(self, i):
-        if isinstance(i, _Base):
-            return i.config_width or i.inner_width
-        else:
-            return i.width
+        return i.config_width or i.inner_width
 
     def _get_child_height(self, i):
-        if isinstance(i, _Base):
-            return i.config_height or i.inner_height
-        else:
-            return i.height
+        return i.config_height or i.inner_height
 
     def _calculate_children_widths(self):
         """

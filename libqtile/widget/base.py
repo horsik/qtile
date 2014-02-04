@@ -6,9 +6,9 @@ import threading
 
 class _Widget(command.CommandObject, configurable.Configurable):
     defaults = [
-        ("background", None, "Widget background color"),
         ("width", None, "Width of a widget, calculated if None"),
         ("height", None, "Height of a widget, calculated if None"),
+        ("background", None, "Widget background color"),
         ("padding", None, "Widget padding in pixels"),
     ]
 
@@ -24,30 +24,8 @@ class _Widget(command.CommandObject, configurable.Configurable):
         self.configured = False
 
     @property
-    def width(self):
-        if self._width is None:
-            return self.inner_width
-        else:
-            return self._width
-
-    @width.setter
-    def width(self, value):
-        self._width = value
-
-    @property
     def config_width(self):
         return self._user_config.get("width")
-
-    @property
-    def height(self):
-        if self._height is None:
-            return self.inner_height
-        else:
-            return self._height
-
-    @height.setter
-    def height(self, value):
-        self._height = value
 
     @property
     def config_height(self):
@@ -86,8 +64,8 @@ class _Widget(command.CommandObject, configurable.Configurable):
         self.drawer = drawer.Drawer(
             qtile,
             self.win.wid,
-            self.bar.width,
-            self.bar.height
+            self.parent.width,
+            self.parent.height
         )
 
         self.configured = True
