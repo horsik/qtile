@@ -99,8 +99,8 @@ class _Base(configurable.Configurable):
 
     def get_widget_in_position(self, e):
         for i in self.widgets:
-            if i.x < e.event_x < i.x + i.width and \
-               i.y < e.event_y < i.y + i.height:
+            if i.x <= e.event_x <= i.x + i.width and \
+               i.y <= e.event_y <= i.y + i.height:
                 return i
 
     def handle_ButtonPress(self, e):
