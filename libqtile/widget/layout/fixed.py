@@ -26,7 +26,7 @@ class Horizontal(_Base):
             i.height = self.height
 
             if i.config_width == STRETCH:
-                i.width = available / len(stretched)
+                i.width = available / len(stretched) if available > 0 else 0
             else:
                 i.width = self._get_child_width(i)
 
@@ -60,7 +60,7 @@ class Vertical(_Base):
             i.width = self.width
 
             if i.config_height == STRETCH:
-                i.height = available / len(stretched)
+                i.height = available / len(stretched) if available > 0 else 0
             else:
                 i.height = self._get_child_height(i)
 
