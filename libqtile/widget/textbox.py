@@ -135,7 +135,7 @@ class TextBox(base._Widget):
     def draw(self):
         self.text_width, self.text_height = self.layout.layout.get_pixel_size()
 
-        self.drawer.clear(self.background or self.bar.background)
+        self.drawer.clear(self.background or self.parent.background)
         self.layout.draw(self.align, self.valign)
 
         if self._calculate_font_size():

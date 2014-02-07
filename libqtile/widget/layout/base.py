@@ -35,7 +35,7 @@ class _Base(configurable.Configurable):
             ("y", 0, "Vertical offset absoute to bar"),
             ("width", self.parent.width, "Width of a layout"),
             ("height", self.parent.height, "Height of a layout"),
-            ("background", self.parent.background, "Widget background color"),
+            ("background", self.parent.background, "Layout background color"),
         ]
 
         self.add_defaults(defaults)
@@ -88,8 +88,13 @@ class _Base(configurable.Configurable):
 
         return widgets + layouts + [0]
 
-    def draw(self):
+    def clear(self):
+        self.bar.drawer.set_source_rgb(self.background)
+        self.bar.drawer.fillrect(0, 0, self.width, self.height)
         self.bar.drawer.draw(self.x, self.y, self.width, self.height)
+
+    def draw(self):
+        self.clear()
         for i in self.widgets:
             i.draw()
 
