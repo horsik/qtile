@@ -117,12 +117,12 @@ class TextFrame:
         else:
             self.pad_top = self.pad_bottom = pad_y
 
-    def draw(self, x, y, rounded=True):
+    def draw(self, x, y, w, h, rounded=True):
         self.drawer.set_source_rgb(self.border_color)
         opts = [
-            x, y,
-            self.layout.width + self.pad_left + self.pad_right,
-            self.layout.height + self.pad_top + self.pad_bottom,
+            x + self.pad_left, y + self.pad_top,
+            w - (self.pad_left + self.pad_right),
+            h - (self.pad_top + self.pad_bottom),
             self.border_width
         ]
         if rounded:
@@ -130,10 +130,6 @@ class TextFrame:
         else:
             self.drawer.rectangle(*opts)
         self.drawer.ctx.stroke()
-        self.layout.draw(
-            x + self.pad_left,
-            y + self.pad_top
-        )
 
     def draw_fill(self, x, y, rounded=True):
         self.drawer.set_source_rgb(self.border_color)

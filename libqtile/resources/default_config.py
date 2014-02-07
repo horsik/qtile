@@ -1,6 +1,8 @@
 from libqtile.config import Key, Screen, Group
 from libqtile.command import lazy
 from libqtile import layout, bar, widget
+from libqtile.constants import *
+
 
 mod = "mod4"
 
@@ -86,19 +88,22 @@ layouts = [
 
 screens = [
     Screen(
-        bottom=bar.Bar(
-            [
-                widget.GroupBox(),
-                widget.Prompt(),
-                widget.WindowName(),
-                widget.TextBox("default config", name="default"),
-                widget.Systray(),
-                widget.Clock('%Y-%m-%d %a %I:%M %p'),
-            ],
-            30,
-        ),
-    ),
+        bars=[
+             bar.Bar(
+                widget.layout.fixed.Horizontal([
+                    widget.GroupBox.Horizontal(width=210),
+                    widget.Prompt(width=STRETCH),
+                    widget.WindowName(),
+                    widget.TextBox("default config", name="default"),
+                    widget.Clock('%Y-%m-%d %a %I:%M %p'),
+                ]), 
+                position=TOP, 
+                height=30
+            ),
+        ]
+   )
 ]
+
 
 main = None
 follow_mouse_focus = True
