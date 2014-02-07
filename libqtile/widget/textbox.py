@@ -73,6 +73,7 @@ class TextBox(base._Widget):
         self._fontsize = value
         if self.layout:
             self.layout.font_size = value
+            self.draw()
 
     @property
     def align(self):
@@ -131,17 +132,14 @@ class TextBox(base._Widget):
         else:
             return True
 
-        # widget size changed, stop drawing bar and start over
-        return False
-
     def draw(self):
         self.text_width, self.text_height = self.layout.layout.get_pixel_size()
 
         self.drawer.clear(self.background or self.bar.background)
         self.layout.draw(self.align, self.valign)
-        self.drawer.draw(self.x, self.y, self.width, self.height)
 
-        return self._calculate_font_size()
+        if self._calculate_font_size():
+            self.drawer.draw(self.x, self.y, self.width, self.height)
 
     def update(self, text):
         self.text = text

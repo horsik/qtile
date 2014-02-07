@@ -91,11 +91,7 @@ class _Base(configurable.Configurable):
     def draw(self):
         self.bar.drawer.draw(self.x, self.y, self.width, self.height)
         for i in self.widgets:
-            if i.draw() == False:
-                # one of children changed size, stop drawing bar and start over
-                return False
-
-        return True
+            i.draw()
 
     def get_widget_in_position(self, e):
         for i in self.widgets:
