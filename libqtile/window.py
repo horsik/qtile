@@ -585,6 +585,7 @@ class Internal(_Window):
     def create(klass, qtile, x, y, width, height, opacity=1.0):
         win = qtile.conn.create_window(x, y, width, height)
         win.set_property("QTILE_INTERNAL", 1)
+        win.set_property("_NET_WM_NAME", "qtilebar")
         i = Internal(win, qtile)
         i.place(x, y, width, height, 0, None)
         i.opacity = opacity

@@ -243,7 +243,7 @@ class Screen(_Wrapper):
     """
     def __init__(self, conn, screen):
         _Wrapper.__init__(self, screen)
-        self.default_colormap = Colormap(conn, screen.default_colormap)
+        self.default_colormap = Colormap(conn, screen)
         self.root = Window(conn, self.root)
         # FIXME: Where is the right place to set the cursor?
         #self.root.set_cursor("Normal")
@@ -263,9 +263,20 @@ class PseudoScreen:
 
 
 class Colormap:
-    def __init__(self, conn, cid):
+    def __init__(self, conn, screen):
         self.conn = conn
-        self.cid = cid
+        self.cid = conn.conn.generate_id()
+        self.set_best_visual(screen)
+        xcb.xproto.xprotoExtension(conn.conn).CreateColormap(
+                0, self.cid, screen.root,
+                self.visual.visual_id
+        )
+
+    def set_best_visual(self, screen):
+        for d in screen.allowed_depths:
+            if d.visuals:
+                self.depth = d.depth
+                self.visual = d.visuals[0]
 
     def alloc_color(self, color):
         """
@@ -825,18 +836,16 @@ class Connection:
     def create_window(self, x, y, width, height):
         wid = self.conn.generate_id()
         self.conn.core.CreateWindow(
-            self.default_screen.root_depth,
+            self.default_screen.default_colormap.depth,
             wid,
             self.default_screen.root.wid,
             x, y, width, height, 0,
             WindowClass.InputOutput,
-            self.default_screen.root_visual,
-            CW.BackPixel | CW.EventMask,
-            [
-                self.default_screen.black_pixel,
-                EventMask.StructureNotify | EventMask.Exposure
-            ]
+            self.default_screen.default_colormap.visual.visual_id,
+            CW.BackPixel | CW.BorderPixel | CW.Colormap,
+            [0, 0, self.default_screen.default_colormap.cid]
         )
+
         return Window(self, wid)
 
     def flush(self):

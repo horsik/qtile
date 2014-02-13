@@ -76,6 +76,17 @@ class TextBox(base._Widget):
             self.draw()
 
     @property
+    def background(self):
+        return self._background
+
+    @background.setter
+    def background(self, value):
+        self._background = value
+        if self.layout:
+            self.drawer.clear(TRANSPARENT)
+            self.draw()
+
+    @property
     def align(self):
         if self.width < self.text_width:
             return 0  # there's nothing to align

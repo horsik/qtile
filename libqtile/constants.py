@@ -17,6 +17,7 @@ constants = [
     "STRETCH",
     "CENTER",
     "UNSPECIFIED",
+    "TRANSPARENT",
 ]
 
 for name in constants:

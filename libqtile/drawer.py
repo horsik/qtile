@@ -5,6 +5,7 @@ import pangocairo
 import cairo
 import pango
 import xcb.xproto
+from constants import *
 
 
 class TextLayout(object):
@@ -178,30 +179,22 @@ class Drawer:
         self.gc = self.qtile.conn.conn.generate_id()
 
         self.qtile.conn.conn.core.CreatePixmap(
-            self.qtile.conn.default_screen.root_depth,
+            self.qtile.conn.default_screen.default_colormap.depth,
             self.pixmap,
             self.wid,
             self.width,
             self.height
         )
-        self.qtile.conn.conn.core.CreateGC(
-            self.gc,
-            self.wid,
-            xcb.xproto.GC.Foreground | xcb.xproto.GC.Background,
-            [
-                self.qtile.conn.default_screen.black_pixel,
-                self.qtile.conn.default_screen.white_pixel
-            ]
-        )
+        self.qtile.conn.conn.core.CreateGC(self.gc, self.wid, 0, [])
         self.surface = cairo.XCBSurface(
             qtile.conn.conn,
             self.pixmap,
-            self.find_root_visual(),
+            self.qtile.conn.default_screen.default_colormap.visual,
             self.width,
             self.height,
         )
         self.ctx = self.new_ctx()
-        self.clear((0, 0, 1))
+        self.clear(TRANSPARENT)
 
     def _rounded_rect(self, x, y, width, height, linewidth):
         aspect = 1.0
@@ -260,12 +253,6 @@ class Drawer:
             width, height
         )
 
-    def find_root_visual(self):
-        for i in self.qtile.conn.default_screen.allowed_depths:
-            for v in i.visuals:
-                if v.visual_id == self.qtile.conn.default_screen.root_visual:
-                    return v
-
     def new_ctx(self):
         return pangocairo.CairoContext(cairo.Context(self.surface))
 
@@ -285,6 +272,13 @@ class Drawer:
             self.ctx.set_source_rgba(*utils.rgb(colour))
 
     def clear(self, colour):
+        if colour == TRANSPARENT:
+            self.ctx.set_source_rgba(0, 0, 0, 0)
+            self.ctx.set_operator(cairo.OPERATOR_CLEAR)
+            self.ctx.paint()
+            self.ctx.set_operator(cairo.OPERATOR_OVER)
+            return
+
         if type(colour) == list:
             linear = cairo.LinearGradient(0.0, 0.0, 0.0, self.height)
             c1 = utils.rgb(colour[0])

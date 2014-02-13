@@ -1,4 +1,5 @@
 from ... import configurable
+from ... constants import *
 
 
 class _Base(configurable.Configurable):
@@ -89,8 +90,7 @@ class _Base(configurable.Configurable):
         return widgets + layouts + [0]
 
     def clear(self):
-        self.bar.drawer.set_source_rgb(self.background)
-        self.bar.drawer.fillrect(0, 0, self.width, self.height)
+        self.bar.drawer.clear(self.background)
         self.bar.drawer.draw(self.x, self.y, self.width, self.height)
 
     def draw(self):
