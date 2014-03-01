@@ -63,15 +63,15 @@ class _Base(configurable.Configurable):
 
             Returns an array of widths of items inside a layout
         """
-        widgets, layouts = [], []
+        children = []
 
         for w in self.widgets:
-            if isinstance(w, _Base):
-                layouts.append(w.inner_width)
+            if isinstance(w, _Base) or not isinstance(w.config_width, int):
+                children.append(w.inner_width)
             else:
-                widgets.append(max(w.inner_width, w.config_width))
+                children.append(max(w.inner_width, w.config_width))
 
-        return widgets + layouts + [0]
+        return children + [0]
 
     def _calculate_children_heights(self):
         """
@@ -79,15 +79,15 @@ class _Base(configurable.Configurable):
 
             Returns an array of heights of items inside a layout
         """
-        widgets, layouts = [], []
+        children = []
 
         for w in self.widgets:
-            if isinstance(w, _Base):
+            if isinstance(w, _Base) or not isinstance(w.config_height, int):
                 layouts.append(w.inner_height)
             else:
                 widgets.append(max(w.inner_height, w.config_height))
 
-        return widgets + layouts + [0]
+        return children + [0]
 
     def clear(self):
         self.bar.drawer.clear(self.background)
